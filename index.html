@@ -30,7 +30,7 @@
             --highlight: #bb86fc;
         }
 
-        /* Фишка 7: Ночной чат (Атмосферная ультра-темная тема с неоном) */
+        /* Фишка 7: Ночной чат */
         .night-chat-theme {
             --bg-color: #020005;
             --element-color: #0d001a;
@@ -38,7 +38,6 @@
             --highlight: #ff007f;
         }
 
-        /* Фишка 10: Полное отключение тяжелых эффектов Blur и анимаций для слабых процессоров */
         .no-blur * {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -47,13 +46,11 @@
             transition: none !important;
         }
 
-        /* Фишка 14: Встроенные моноширинные и футуристичные воид-шрифты */
         .void-font-active {
             font-family: 'Courier New', Courier, monospace !important;
             letter-spacing: 1px;
         }
 
-        /* Фишка 9: Переливающиеся цвета фона (Фиолетовый + Черный каждые 10 секунд) */
         .gradient-bg-active {
             background: linear-gradient(270deg, #1a0033, #000000, #3d0066);
             background-size: 600% 600%;
@@ -65,7 +62,6 @@
             100%{background-position:0% 50%}
         }
 
-        /* Фишка 1: Анимации появления экранов */
         .animated-screens .screen {
             transition: transform var(--transition-speed) ease-in-out, opacity var(--transition-speed) ease-in-out;
             opacity: 0;
@@ -76,7 +72,6 @@
             transform: scale(1);
         }
 
-        /* Спойлер (Фишка 26) */
         .spoiler-text {
             background-color: #555;
             color: transparent;
@@ -101,7 +96,6 @@
             flex-direction: column;
         }
 
-        /* Фишка 30: Стильная темная заставка при запуске приложения */
         #splash-screen {
             position: fixed;
             top:0; left:0; width:100vw; height:100vh;
@@ -207,7 +201,7 @@
             text-align: center;
         }
 
-        .chat-list, .friends-list { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .chat-list, .friends-list, .global-search-list { width: 100%; display: flex; flex-direction: column; align-items: center; }
         .chat-item, .friend-item {
             width: 90%;
             background-color: var(--element-color);
@@ -267,7 +261,6 @@
         .dm-msg.sent { background-color: var(--highlight); align-self: flex-end; }
         .dm-msg.received { background-color: var(--element-color); align-self: flex-start; }
         
-        /* Кружочки с фишкой 17 (Размытие фона внутри кружочка) */
         .video-circle {
             width: 120px;
             height: 120px;
@@ -278,7 +271,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            filter: blur(0px); /* Сброс */
         }
         .blur-location-active .video-circle {
             backdrop-filter: blur(8px) !important;
@@ -286,6 +278,7 @@
         }
 
         .dm-input-area { width: 90%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .dm-input-wrapper { display: flex; gap: 5px; align-items: center; width: 100%; }
         .dm-input { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid black; background: var(--element-color); color: var(--text-color); }
 
         .profile-header { margin-top: 20px; text-align: center; width: 100%; }
@@ -358,19 +351,42 @@
 
         .btn-action { background: var(--highlight); color: white; border: 2px solid black; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        /* Медиаплеер (Фишка 18) */
-        .music-player {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 8px;
-            display: flex;
-            align-items: center;
+        /* Стили для панели стикеров */
+        .sticker-panel {
+            display: none;
+            background: var(--element-color);
+            border: 2px solid black;
+            border-radius: 10px;
+            padding: 10px;
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            width: 100%;
+            width: 90%;
             box-sizing: border-box;
-            margin-top: 5px;
+            margin-bottom: 5px;
         }
+        .sticker-option { font-size: 35px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .sticker-option:hover { transform: scale(1.2); }
+
+        /* Кликер дизайн */
+        .clicker-container {
+            width: 90%;
+            background: rgba(0,0,0,0.3);
+            border: 2px dashed var(--highlight);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        .grape-btn {
+            font-size: 60px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.1s;
+        }
+        .grape-btn:active { transform: scale(0.85); }
     </style>
 </head>
 <body>
@@ -398,7 +414,8 @@
         <button class="back-btn" onclick="switchScreen('login-screen')">← Назад</button>
         <div class="reg-box">
             <h2>Регистрация в Nexumes</h2>
-            <input type="text" id="username-input" class="reg-input" placeholder="Придумай уникальный ник (без @)" /> <select id="country-input" class="reg-select">
+            <input type="text" id="username-input" class="reg-input" placeholder="Придумай уникальный ник (без @)" /> 
+            <select id="country-input" class="reg-select">
                 <option value="UA">🇺🇦 Украина</option>
                 <option value="RU">🇷🇺 Россия</option>
                 <option value="US">🇺🇸 США</option>
@@ -418,17 +435,24 @@
 
         <div class="search-container">
             <span class="search-icon-inside">🔍</span>
-            <input type="text" id="search-input" class="search-input" placeholder="Поиск по @нику или названию..." oninput="filterChats()"> </div>
+            <input type="text" id="search-input" class="search-input" placeholder="Глобальный поиск людей по @нику или каналов..." oninput="filterChats()"> 
+        </div>
         
         <div class="create-btn" onclick="openCreateChannel()">📢 Создать свой канал</div>
         
+        <div id="global-search-section" style="display:none; width:100%;">
+            <div class="section-title" style="color:var(--highlight);">РЕЗУЛЬТАТЫ ГЛOБАЛЬНОГО ПОИСКА ЛЮДЕЙ</div>
+            <div class="global-search-list" id="global-search-container"></div>
+        </div>
+
         <div class="section-title">ПУБЛИЧНЫЕ КАНАЛЫ</div>
         <div class="chat-list" id="chat-list-container"></div>
 
         <div class="section-title">ДРУЗЬЯ И ЛС</div>
         <div class="friends-list" id="friends-list-container"></div>
 
-        <div class="section-title">ДОБАВИТЬ ДРУГА ПО @НИКУ</div> <div style="width:90%; display:flex; gap:8px; margin-bottom: 20px;">
+        <div class="section-title">ДОБАВИТЬ ДРУГА ПО @НИКУ</div> 
+        <div style="width:90%; display:flex; gap:8px; margin-bottom: 20px;">
             <input type="text" id="friend-input" class="dm-input" placeholder="@username друга">
             <button class="btn-action" onclick="addFriend()">Добавить</button>
         </div>
@@ -454,26 +478,42 @@
             <span>Чат</span>
         </div>
 
-        <div id="fake-typing-status" style="width:90%; font-size:12px; color:var(--highlight); height:15px; margin-bottom:5px; font-style:italic; display:none;">печатaет...</div>
+        <div id="fake-typing-status" style="width:90%; font-size:12px; color:var(--highlight); height:15px; margin-bottom:5px; font-style:italic; display:none;">печатает...</div>
 
         <div class="dm-messages" id="dm-messages-container"></div>
         
-        <div style="width:90%; display:flex; gap:5px; margin-bottom:5px;">
+        <div style="width:90%; display:flex; gap:5px; margin-bottom:5px; overflow-x:auto;">
             <button class="btn-action" style="padding:4px 8px; font-size:11px; background:#444;" onclick="wrapInputFormat('code')">Текст ➜ Код</button>
             <button class="btn-action" style="padding:4px 8px; font-size:11px; background:#444;" onclick="wrapInputFormat('spoiler')">Текст ➜ Спойлер</button>
             <button class="btn-action" style="padding:4px 8px; font-size:11px; background:#e63946;" onclick="toggleCipherMode()">Шифратор: <span id="cipher-state">ВЫКЛ</span></button>
         </div>
 
-        <div class="dm-input-area">
-            <input type="text" id="dm-message-input" class="dm-input" placeholder="Сообщение...">
+        <div class="sticker-panel" id="sticker-selector-panel">
+            <div class="sticker-option" onclick="sendSticker('🤡')">🤡</div>
+            <div class="sticker-option" onclick="sendSticker('🔥')">🔥</div>
+            <div class="sticker-option" onclick="sendSticker('💀')">💀</div>
+            <div class="sticker-option" onclick="sendSticker('👑')">👑</div>
+            <div class="sticker-option" onclick="sendSticker('👻')">👻</div>
+            <div class="sticker-option" onclick="sendSticker('👽')">👽</div>
+            <div class="sticker-option" onclick="sendSticker('👿')">👿</div>
+            <div class="sticker-option" onclick="sendSticker('🍇')">🍇</div>
+        </div>
+
+        <div class="dm-input-area" id="dm-controls-area">
+            <div class="dm-input-wrapper">
+                <label for="chat-photo-input" class="btn-action" style="background:#2a9d8f; padding:10px;">📎</label>
+                <input type="file" id="chat-photo-input" style="display:none;" accept="image/*" onchange="sendImageMessage(event)">
+                
+                <input type="text" id="dm-message-input" class="dm-input" placeholder="Сообщение...">
+            </div>
             <div style="display:flex; gap:5px; width:100%;">
                 <button class="btn-action" style="flex:1;" onclick="sendDmMessage(false)">Отправить</button>
                 <button class="btn-action" style="background:#ffb703; color:black; font-size:11px;" onclick="sendDmMessage(true)">⏱ Задержка 2м.</button>
             </div>
             
             <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                <button class="btn-action" style="font-size:11px; background:#2a9d8f;" onclick="sendDemoContent('photo')">🖼 Отправить Фото с 1 просмотром</button>
-                <button class="btn-action" style="font-size:11px; background:#a2d2ff; color:black;" onclick="sendDemoContent('sticker')">🤡 Стикер</button>
+                <button class="btn-action" style="font-size:11px; background:#2a9d8f;" onclick="sendDemoContent('photo')">🖼️ Фото 1 просмотр</button>
+                <button class="btn-action" style="font-size:11px; background:#a2d2ff; color:black;" onclick="toggleStickerPanel()">💥 Стикеры</button>
                 <button class="btn-action" style="font-size:11px; background:#7209b7;" onclick="sendDemoContent('circle')">⭕ Кружочек</button>
             </div>
         </div>
@@ -490,7 +530,18 @@
             </div>
         </div>
 
-        <label for="avatar-upload" class="btn-purple">📷 Сменить аватарку (Любая картинка)</label> <input type="file" id="avatar-upload" style="display:none;" accept="image/*" onchange="uploadPhoto(event)">
+        <div class="clicker-container">
+            <h3>🍇 Бот-кликер Винограда</h3>
+            <div style="font-size:16px; margin-bottom:10px;">Баланс: <strong id="grape-balance" style="color:#00ffcc;">0</strong> 🍇</div>
+            <div style="font-size:12px; opacity:0.6; margin-bottom:10px;">Кликов сегодня: <span id="clicks-today">0</span> / 100</div>
+            <button class="grape-btn" onclick="clickGrape()">🍇</button>
+            <div style="font-size:11px; opacity:0.5; margin-top:5px;">10 кликов = 1 виноградина</div>
+        </div>
+
+        <button class="btn-purple" style="background:#ffb703; color:black; border:2px solid #fff;" onclick="buyPremiumWithGrapes()">⭐ Купить Настоящий Premium за 1000 🍇</button>
+
+        <label for="avatar-upload" class="btn-purple">📷 Сменить аватарку (Любая картинка)</label> 
+        <input type="file" id="avatar-upload" style="display:none;" accept="image/*" onchange="uploadPhoto(event)">
 
         <div class="menu-block">
             <div class="menu-item" onclick="switchScreen('sett-nexumes-mods')">⚡ Модификации Nexumes (Всё включено) <span class="arrow">></span></div>
@@ -508,73 +559,31 @@
         <button class="back-btn" onclick="switchScreen('settings-screen')">⬅ Назад</button>
         <h2>Функции Nexumes Mods</h2>
         
-        <div class="setting-row">
-            <span>👁️ Режим Призрака (Анонимность) <br><small style="opacity:0.6;">Не слать статус «Прочитано» и смотреть истории скрытно</small></span>
-            <button class="btn-action" id="mod-ghost" onclick="toggleMod('ghost')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🛑 Анти-Уведомление о скринах <br><small style="opacity:0.6;">Собеседник не узнает, если ты заскринил чат</small></span>
-            <button class="btn-action" id="mod-noscreenshot" onclick="toggleMod('noscreenshot')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🕵️‍♂️ Показ Удаленных Сообщений <br><small style="opacity:0.6;">Если сообщение удалят, ты всё равно его увидишь</small></span>
-            <button class="btn-action" id="mod-viewdeleted" onclick="toggleMod('viewdeleted')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🔄 Вечные фото/видео одноразового просмотра</span>
-            <button class="btn-action" id="mod-infiniteview" onclick="toggleMod('infiniteview')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>✏️ Скрывать надпись «Редактировано»</span>
-            <button class="btn-action" id="mod-hideedited" onclick="toggleMod('hideedited')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🎭 Вечный фейковый статус «Печатает» в чатах</span>
-            <button class="btn-action" id="mod-faketyping" onclick="toggleMod('faketyping')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🤫 Режим Тишины (Глушить всё кроме ЛС)</span>
-            <button class="btn-action" id="mod-silence" onclick="toggleMod('silence')">ВЫКЛ</button> </div>
-        <div class="setting-row">
-            <span>🧹 Авто-очистка кэша (Раз в 2 дня)</span>
-            <button class="btn-action" id="mod-autoclean" onclick="toggleMod('autoclean')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🛰️ Удаление EXIF-геотегов из фото перед отправкой</span>
-            <button class="btn-action" id="mod-exif" onclick="toggleMod('exif')">ВКЛ</button> </div>
-        <div class="setting-row">
-            <span>🔕 Скрывать онлайн (Не ставить плашку)</span>
-            <button class="btn-action" id="mod-hideonline" onclick="toggleMod('hideonline')">ВКЛ</button> </div>
+        <div class="setting-row"><span>👁️ Режим Призрака</span><button class="btn-action" id="mod-ghost" onclick="toggleMod('ghost')">ВКЛ</button></div>
+        <div class="setting-row"><span>🛑 Анти-Уведомление о скринах</span><button class="btn-action" id="mod-noscreenshot" onclick="toggleMod('noscreenshot')">ВКЛ</button></div>
+        <div class="setting-row"><span>🕵️‍♂️ Показ Удаленных Сообщений</span><button class="btn-action" id="mod-viewdeleted" onclick="toggleMod('viewdeleted')">ВКЛ</button></div>
+        <div class="setting-row"><span>🔄 Вечные фото/видео</span><button class="btn-action" id="mod-infiniteview" onclick="toggleMod('infiniteview')">ВКЛ</button></div>
+        <div class="setting-row"><span>✏️ Скрывать «Редактировано»</span><button class="btn-action" id="mod-hideedited" onclick="toggleMod('hideedited')">ВКЛ</button></div>
+        <div class="setting-row"><span>🎭 Фейковый статус «Печатает»</span><button class="btn-action" id="mod-faketyping" onclick="toggleMod('faketyping')">ВКЛ</button></div>
     </div>
 
     <div id="sett-perf" class="screen">
         <button class="back-btn" onclick="switchScreen('settings-screen')">⬅ Назад</button>
-        <h2>Производительность (Фишка 2, 10, 11)</h2>
-        
-        <div class="setting-row">
-            <span>🚫 Полное отключение тяжелых эффектов Blur</span>
-            <button class="btn-action" id="blur-btn" onclick="toggleBlurToggle()">Отключено</button> </div>
-
-        <div class="setting-row">
-            <span>📊 Герцовка чатов (FPS Locker)</span>
-            <select id="fps-chats" class="reg-select" style="width:auto; margin:0;" onchange="alert('Герцовка чатов установлена на ' + this.value)">
-                <option value="120">120 Гц</option>
-                <option value="90">90 Гц</option>
-                <option value="60" selected>60 Гц (Стандарт)</option>
-                <option value="30">30 Гц (Экономия батареи)</option>
-            </select> </div>
-
-        <div class="setting-row">
-            <span>⚙️ Герцовка анимаций меню</span>
-            <select id="fps-menu" class="reg-select" style="width:auto; margin:0;" onchange="alert('Герцовка меню установлена на ' + this.value)">
-                <option value="120">120 Гц</option>
-                <option value="90">90 Гц</option>
-                <option value="60" selected>60 Гц</option>
-                <option value="30">30 Гц (Макс. сбережение)</option>
-            </select> </div>
+        <h2>Производительность</h2>
+        <div class="setting-row"><span>🚫 Отключение эффектов Blur</span><button class="btn-action" id="blur-btn" onclick="toggleBlurToggle()">Отключено</button></div>
     </div>
 
     <div id="sett-theme" class="screen">
         <button class="back-btn" onclick="switchScreen('settings-screen')">⬅ Назад</button>
         <h2>Кастомизация дизайна</h2>
-        <div class="setting-row"><span>🌌 Переливающиеся фоны (Фиолетово-Черный)</span><button class="btn-action" id="gradient-btn" onclick="toggleGradientBg()">Включить</button></div> <div class="setting-row"><span>🛸 Встроенный Воид-шрифт (Футуристичный)</span><button class="btn-action" id="font-btn" onclick="toggleVoidFont()">Включить</button></div> <div class="setting-row"><span>🔴 Размывать фон в кружочках (Скрывать локацию)</span><button class="btn-action" id="blurcircle-btn" onclick="toggleCircleBlur()">Включить</button></div> <hr style="width:90%; border-color:#333;">
-        <div class="setting-row"><span>🌌 Фиолетовая тема (Nexumes Standard)</span><button class="btn-action" onclick="changeTheme('void')">Выбрать</button></div>
+        <div class="setting-row"><span>🌌 Переливающиеся фоны</span><button class="btn-action" id="gradient-btn" onclick="toggleGradientBg()">Включить</button></div> 
+        <div class="setting-row"><span>🛸 Встроенный Воид-шрифт</span><button class="btn-action" id="font-btn" onclick="toggleVoidFont()">Включить</button></div>
+        <hr style="width:90%; border-color:#333;">
+        <div class="setting-row"><span>🌌 Фиолетовая тема</span><button class="btn-action" onclick="changeTheme('void')">Выбрать</button></div>
         <div class="setting-row"><span>Тёмная (Dark Mode)</span><button class="btn-action" onclick="changeTheme('dark')">Выбрать</button></div>
         <div class="setting-row"><span>Светлая (Light Mode)</span><button class="btn-action" onclick="changeTheme('light')">Выбрать</button></div>
-        <div class="setting-row"><span>🌃 Ночной чат (Атмосферный Неон)</span><button class="btn-action" onclick="changeTheme('night')">Выбрать</button></div> </div>
+        <div class="setting-row"><span>🌌 Ночной чат</span><button class="btn-action" onclick="changeTheme('night')">Выбрать</button></div> 
+    </div>
 
     <div id="bottom-nav" class="bottom-nav">
         <div class="nav-item active-nav" id="nav-chats" onclick="switchScreen('chats-screen', this)"><span>💬</span>Чаты</div>
@@ -589,28 +598,33 @@
         const MSGS_KEY = 'nexumes_msgs_';
         const COUNTRIES_KEY = 'nexumes_user_country_';
         const AVATARS_KEY = 'nexumes_avatar_';
+        
+        // Ключи кликера
+        const GRAPE_BAL_KEY = 'nexumes_grape_bal';
+        const CLICKS_TODAY_KEY = 'nexumes_clicks_today';
+        const LAST_CLICK_DATE_KEY = 'nexumes_last_click_date';
+        const PREMIUM_KEY = 'nexumes_real_premium';
 
         let currentUser = null;
-        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint'];
+        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya'];
         let activeDmFriend = null;
         
-        // Переменные состояний модов
         let cipherModeActive = false;
         let modsState = {
             ghost: true, noscreenshot: true, viewdeleted: true, infiniteview: true,
             hideedited: true, faketyping: false, silence: false, autoclean: true, exif: true, hideonline: true
         };
 
-        // Фишка 30: Имитация исчезновения сплеш-скрина при загрузке
         window.addEventListener('DOMContentLoaded', () => {
+            if(!localStorage.getItem(USERS_KEY)) {
+                localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
+            }
             setTimeout(() => {
                 document.getElementById('splash-screen').style.display = 'none';
-                // Фишка 29: Автоочистка кэша (симуляция) при старте
-                if(modsState.autoclean) { console.log("Nexumes Cache Auto-Cleaned: Телефон оптимизирован и не тупит!"); }
-            }, 1800);
+            }, 1000);
+            updateClickerUI();
         });
 
-        // Включение анимаций экранов (Фишка 1, 2)
         document.body.classList.add('animated-screens');
 
         function switchScreen(screenId, navElement) {
@@ -624,50 +638,42 @@
             if (screenId === 'chats-screen') { renderChatsAndFriends(); }
         }
 
-        // Фишка 6: Функция кастомизации логотипа
         function changeLogoStyle(val) {
             document.getElementById('login-title').innerText = "Вход в " + val.split(' ')[1];
             document.getElementById('main-header-logo').innerText = val.split(' ')[1].toUpperCase();
         }
 
-        // Фишка 20: Быстрое прокси
         function changeProxyQuick() {
             const list = ['SOCKS5 Кибер-Прокси (Германия)', 'MTProto Защищенный (США)', 'Nexumes Tunnel (Украина)'];
-            const chosen = list[Math.floor(Math.random() * list.length)];
-            document.getElementById('proxy-status').innerText = chosen;
-            // Фишка 23: 8-бит звуковое уведомление о переключении
+            document.getElementById('proxy-status').innerText = list[Math.floor(Math.random() * list.length)];
             play8BitSound();
         }
 
-        // Фишка 23: Встроенные эмбиент и 8-бит звуки
         function play8BitSound() {
             let ctx = new (window.AudioContext || window.webkitAudioContext)();
             let osc = ctx.createOscillator();
             let gain = ctx.createGain();
             osc.type = 'square';
-            osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
             gain.gain.setValueAtTime(0.1, ctx.currentTime);
             osc.connect(gain); gain.connect(ctx.destination);
             osc.start(); osc.stop(ctx.currentTime + 0.25);
         }
 
-        // Фишка 28: Открытие избранного на нижней панели
         function openSavedNotes(navEl) {
-            activeDmFriend = currentUser; // чат с самим собой
+            activeDmFriend = currentUser;
             document.getElementById('dm-partner-name').innerText = '⭐ Личное Избранное (Заметки)';
+            document.getElementById('dm-controls-area').style.display = 'flex';
             renderDmMessages();
             switchScreen('dm-screen', navEl);
         }
 
-        // РЕГИСТРАЦИЯ И ВХОД С ПОДДЕРЖКОЙ ОБЯЗАТЕЛЬНОГО @НИКА (Фишка 32, 33)
         function registerUser() {
             let input = document.getElementById('username-input').value.trim().toLowerCase();
             let country = document.getElementById('country-input').value;
-
             if (!input) return alert('Введите юзернейм!');
             if (input.startsWith('@')) input = input.substring(1);
-
             if (allUsers.includes(input)) return alert('Этот ник занят!');
 
             allUsers.push(input);
@@ -676,7 +682,6 @@
 
             let accountData = { username: input, country: country };
             localStorage.setItem('nexumes_user', JSON.stringify(accountData));
-            
             currentUser = input;
             applyAccountData(accountData);
         }
@@ -686,12 +691,14 @@
             if (!input) return alert('Введите @username');
             if (input.startsWith('@')) input = input.substring(1);
 
-            if (!allUsers.includes(input)) return alert('Пользователь не найден!');
+            if (!allUsers.includes(input)) {
+                allUsers.push(input);
+                localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
+            }
 
             let savedCountry = localStorage.getItem(COUNTRIES_KEY + input) || 'UA';
             let accountData = { username: input, country: savedCountry };
             localStorage.setItem('nexumes_user', JSON.stringify(accountData));
-            
             currentUser = input;
             applyAccountData(accountData);
         }
@@ -710,6 +717,15 @@
             document.getElementById('display-name').innerText = "Пользователь [" + data.country + "]";
             document.getElementById('display-username').innerText = '@' + data.username;
             
+            // Настоящая проверка Премиума
+            if(localStorage.getItem(PREMIUM_KEY + data.username) === 'true') {
+                document.getElementById('premium-badge').innerText = "⭐ PREMIUM MEMBERSHIP ACTIVE";
+                document.getElementById('premium-badge').style.color = "#00ffcc";
+            } else {
+                document.getElementById('premium-badge').innerText = "⭐ VISUAL PREMIUM ACTIVE";
+                document.getElementById('premium-badge').style.color = "#ffb703";
+            }
+
             let av = document.getElementById('main-avatar');
             let savedAvatar = localStorage.getItem(AVATARS_KEY + data.username);
             if (savedAvatar) {
@@ -731,23 +747,21 @@
             }
         }
 
-        // Фишка 19: Подтверждение перед звонком
         function makeCallSafe() {
-            if(confirm("📲 Nexumes Защита: Вы точно хотите совершить защищенный звонок пользователю @"+activeDmFriend+"?")) {
+            if(confirm("📲 Вы точно хотите совершить защищенный звонок пользователю @"+activeDmFriend+"?")) {
                 alert("Вызывается шифрованная линия соединения...");
             }
         }
 
-        // Фишка 31: Рендеринг стикеров, чатов, поиск по @ (Фишка 32)
         function renderChatsAndFriends() {
             let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
             let chatContainer = document.getElementById('chat-list-container');
             chatContainer.innerHTML = channels.map(ch => `
-                <div class="chat-item" data-name="${ch.name.toLowerCase()} ${ch.username.toLowerCase()}">
-                    <div class="chat-avatar" style="background-color: var(--highlight)">${ch.name.charAt(0).toUpperCase()}</div>
+                <div class="chat-item" onclick="openChannelChat('${ch.username}', '${ch.name}')">
+                    <div class="chat-avatar" style="background-color: #7209b7">📢</div>
                     <div class="chat-info">
                         <div class="chat-name">${ch.name}</div>
-                        <div class="chat-type">Канал Nexumes • ${ch.username}</div>
+                        <div class="chat-type">Канал • ${ch.username}</div>
                     </div>
                 </div>
             `).join('');
@@ -756,40 +770,64 @@
             let friends = JSON.parse(localStorage.getItem(FRIENDS_KEY + currentUser)) || [];
             let friendsContainer = document.getElementById('friends-list-container');
             
-            // Фирменные системные боты в списке контактов
             let systemBotsHTML = `
-                <div class="friend-item" onclick="openDm('bot_reviews')" data-name="@bot_reviews бот отзывы">
+                <div class="friend-item" onclick="openDm('bot_reviews')">
                     <div class="friend-avatar" style="background:#0077b6">🤖</div>
-                    <div class="friend-info"><div class="friend-name">Бот отзывов Nexumes</div><div class="chat-type">Системный робот</div></div>
+                    <div class="friend-info"><div class="friend-name">Бот отзывов Nexumes</div><div class="chat-type">Робот</div></div>
                 </div>
-                <div class="friend-item" onclick="openDm('ai_osint')" data-name="@ai_osint бот ии фото поиск">
+                <div class="friend-item" onclick="openDm('ai_osint')">
                     <div class="friend-avatar" style="background:#2a9d8f">🧠</div>
                     <div class="friend-info"><div class="friend-name">ИИ Сканер Геолокации</div><div class="chat-type">Nexumes AI Bot</div></div>
                 </div>
             `;
 
-            if(friends.length === 0) {
-                friendsContainer.innerHTML = systemBotsHTML + '<p style="opacity:0.5; font-size:14px; text-align:center;">Список добавленных друзей пуст</p>';
-            } else {
-                friendsContainer.innerHTML = systemBotsHTML + friends.map(f => {
-                    let fAv = localStorage.getItem(AVATARS_KEY + f);
-                    let avStyle = fAv ? `background-image:url('${fAv}');text-indent:-9999px;` : '';
-                    return `
-                        <div class="friend-item" onclick="openDm('${f}')" data-name="@${f}">
-                            <div class="friend-avatar" style="${avStyle}">${f.charAt(0).toUpperCase()}</div>
-                            <div class="friend-info"><div class="friend-name">@${f}</div></div>
-                        </div>
-                    `;
-                }).join('');
-            }
+            friendsContainer.innerHTML = systemBotsHTML + friends.map(f => {
+                let fAv = localStorage.getItem(AVATARS_KEY + f);
+                let avStyle = fAv ? `background-image:url('${fAv}');text-indent:-9999px;` : '';
+                return `
+                    <div class="friend-item" onclick="openDm('${f}')">
+                        <div class="friend-avatar" style="${avStyle}">${f.charAt(0).toUpperCase()}</div>
+                        <div class="friend-info"><div class="friend-name">@${f}</div></div>
+                    </div>
+                `;
+            }).join('');
         }
 
+        // НОРМАЛЬНЫЙ ГЛOБАЛЬНЫЙ ПОИСК ЛЮДЕЙ И КАНАЛОВ БЕЗ БАГОВ
         function filterChats() {
             let q = document.getElementById('search-input').value.toLowerCase().trim();
-            document.querySelectorAll('.chat-item, .friend-item').forEach(item => {
-                let text = item.getAttribute('data-name');
+            let globalSection = document.getElementById('global-search-section');
+            let globalContainer = document.getElementById('global-search-container');
+            
+            if(!q) {
+                globalSection.style.display = 'none';
+                renderChatsAndFriends();
+                return;
+            }
+
+            // Локальный фильтр
+            document.querySelectorAll('.chat-list .chat-item, .friends-list .friend-item').forEach(item => {
+                let text = item.innerText.toLowerCase();
                 item.style.display = text.includes(q) ? 'flex' : 'none';
             });
+
+            // Глобальный поиск по всем пользователям системы
+            let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser && u !== 'bot_reviews' && u !== 'ai_osint');
+            
+            if(foundUsers.length > 0) {
+                globalSection.style.display = 'block';
+                globalContainer.innerHTML = foundUsers.map(u => `
+                    <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="openDm('${u}')">
+                        <div class="friend-avatar" style="background:var(--highlight)">👤</div>
+                        <div class="friend-info">
+                            <div class="friend-name">@${u}</div>
+                            <div class="chat-type" style="color:#00ffcc;">Глобальный пользователь • Нажмите чтобы написать</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                globalSection.style.display = 'none';
+            }
         }
 
         function addFriend() {
@@ -797,37 +835,49 @@
             if (!input) return;
             if (input.startsWith('@')) input = input.substring(1);
             if (input === currentUser) return alert('Нельзя добавить себя!');
-            if (!allUsers.includes(input)) return alert('Пользователь не найден!');
+            if (!allUsers.includes(input)) return alert('Пользователь не найден в глобальной базе!');
 
             let friends = JSON.parse(localStorage.getItem(FRIENDS_KEY + currentUser)) || [];
             if (friends.includes(input)) return alert('Уже в друзьях!');
             friends.push(input);
             localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
 
-            let mutual = JSON.parse(localStorage.getItem(FRIENDS_KEY + input)) || [];
-            if (!mutual.includes(currentUser)) { mutual.push(currentUser); localStorage.setItem(FRIENDS_KEY + input, JSON.stringify(mutual)); }
-
             document.getElementById('friend-input').value = '';
             renderChatsAndFriends();
+            alert('Пользователь добавлен!');
         }
 
         function openDm(friend) {
             activeDmFriend = friend;
             document.getElementById('dm-partner-name').innerHTML = `<span>Чат с @${friend}</span>`;
+            document.getElementById('dm-controls-area').style.display = 'flex'; // Показываем ввод
             
-            // Фишка 27: Включение вечной фейковой печати
             let typingEl = document.getElementById('fake-typing-status');
-            if(modsState.faketyping || friend === 'bot_reviews' || friend === 'ai_osint') {
-                typingEl.style.display = 'block';
-            } else {
-                typingEl.style.display = 'none';
-            }
+            typingEl.style.display = (modsState.faketyping || friend.includes('bot')) ? 'block' : 'none';
 
             renderDmMessages();
             switchScreen('dm-screen');
         }
 
-        // Фишка 26: Быстрое превращение текста в код или спойлер через кнопки меню ввода
+        // ОТКРЫТИЕ КАНАЛА (Только создатель может писать)
+        function openChannelChat(chUsername, chName) {
+            activeDmFriend = chUsername; // Юз канала
+            document.getElementById('dm-partner-name').innerHTML = `<span>📢 Канал: ${chName}</span>`;
+            
+            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+            let currentChannel = channels.find(c => c.username === chUsername);
+            
+            // Если у канала нет создателя (старый канал) или создатель — текущий юзер
+            if(!currentChannel.creator || currentChannel.creator === currentUser) {
+                document.getElementById('dm-controls-area').style.display = 'flex'; // Можно писать
+            } else {
+                document.getElementById('dm-controls-area').style.display = 'none'; // Нельзя писать, только просмотр!
+            }
+            
+            renderDmMessages();
+            switchScreen('dm-screen');
+        }
+
         function wrapInputFormat(type) {
             let input = document.getElementById('dm-message-input');
             if(!input.value.trim()) return;
@@ -835,40 +885,51 @@
             if(type === 'spoiler') input.value = `||${input.value}||`;
         }
 
-        // Фишка 15: Переводчик мыслей на шифр (инверсия букв/символов перед отправкой)
         function toggleCipherMode() {
             cipherModeActive = !cipherModeActive;
             document.getElementById('cipher-state').innerText = cipherModeActive ? "ВКЛ" : "ВЫКЛ";
         }
         function runCipher(text) {
-            return text.replace(/[а-яА-Яa-zA-Z]/g, function(c){
-                return String.fromCharCode(c.charCodeAt(0) + 3); // Быстрый сдвиг-шифр псевдокода
-            });
+            return text.replace(/[а-яА-Яa-zA-Z]/g, c => String.fromCharCode(c.charCodeAt(0) + 3));
         }
 
-        // Отправка демонстрационных медиафайлов (Кружочки, 1 просмотр, Стикеры)
+        function toggleStickerPanel() {
+            let panel = document.getElementById('sticker-selector-panel');
+            panel.style.display = panel.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        // ФУНКЦИЯ ОТПРАВКИ ЛЮБЫХ СТИКЕРОВ В ЧАТ
+        function sendSticker(sticker) {
+            let content = `<div style="font-size: 80px; transform: scale(1); animation: pulse 2s infinite; display:inline-block;">${sticker}</div>`;
+            submitMessageToStorage(content);
+            document.getElementById('sticker-selector-panel').style.display = 'none';
+        }
+
+        // ФУНКЦИЯ ОТПРАВКИ ЛЮБЫХ ФОТО В ЧАТ С УСТРОЙСТВА
+        function sendImageMessage(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let imgHtml = `<img src="${e.target.result}" style="max-width:100%; border-radius:10px; border:1px solid black; margin-top:5px; display:block;">`;
+                    submitMessageToStorage(imgHtml);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         function sendDemoContent(type) {
             let content = '';
             if(type === 'photo') {
                 content = `🖼️ [ФОТО ОДНОРАЗОВОГО ПРОСМОТРА] <br> <img src="https://picsum.photos/150" style="border-radius:8px; margin-top:5px; border:1px solid black;">`;
-                // Фишка 5.2: Модификатор бесконечного просмотра
-                if(modsState.infiniteview) content += `<br><span style="font-size:10px;color:#00ffcc;">🔓 Nexumes Bypass: Таймер просмотра стерт, фото сохранено навсегда!</span>`;
-            }
-            if(type === 'sticker') {
-                // Фишка 31: Полноценные стикеры
-                content = `💬 [Стикер Мемес] <br> <span style="font-size:50px;">🤡</span>`;
+                if(modsState.infiniteview) content += `<br><span style="font-size:10px;color:#00ffcc;">🔓 Nexumes Bypass: Фото сохранено!</span>`;
             }
             if(type === 'circle') {
-                // Фишка 17: Кружочек + размытие фона
-                content = `<div class="video-circle">🎥 Камера кружочка</div>`;
-                if(document.body.classList.contains('blur-location-active')) {
-                    content += `<span style="font-size:10px;color:#ff007f;">🔴 Защита: Задний фон видео размыт, геолокация скрыта</span>`;
-                }
+                content = `<div class="video-circle">🎥 Кружочек Видео</div>`;
             }
             submitMessageToStorage(content);
         }
 
-        // СВЯЗКА С СЕРВЕРАМИ И ОТПРАВКА СООБЩЕНИЙ (Фишка 4, 21)
         function sendDmMessage(withDelay = false) {
             let input = document.getElementById('dm-message-input');
             let text = input.value.trim();
@@ -876,7 +937,6 @@
 
             if(cipherModeActive) { text = "🔒 [Шифр-Мысли]: " + runCipher(text); }
 
-            // Фишка 26: Рендеринг спойлеров и кодов внутри текста
             if(text.startsWith('||') && text.endsWith('||')) {
                 let inside = text.substring(2, text.length - 2);
                 text = `<span class="spoiler-text" onclick="this.classList.toggle('revealed')">${inside}</span>`;
@@ -886,8 +946,8 @@
             }
 
             if(withDelay) {
-                alert("⏱ Сообщение поставлено в очередь Nexumes на отправку через 2 минуты!");
-                setTimeout(() => { executeMessageSending(text); }, 3000); // ускорено до 3с для демонстрации в коде
+                alert("⏱ Сообщение будет отправлено через задержку!");
+                setTimeout(() => { executeMessageSending(text); }, 2000);
             } else {
                 executeMessageSending(text);
             }
@@ -897,18 +957,13 @@
         function executeMessageSending(text) {
             submitMessageToStorage(text);
             
-            // Фишка 4: Связка с серверами ТГ (Webhook отправка боту)
-            fetch(`https://api.telegram.org/bot7777777:fake_token/sendMessage?chat_id=12345&text=Nexumes_Sync: ${text}`)
-            .catch(err => console.log("Синхронизация ТГ Вебхука успешна в фоне."));
-
-            // Логика ответов ботов (Фишка 3, Фишка 8)
             if(activeDmFriend === 'bot_reviews') {
                 setTimeout(() => {
-                    submitMessageFromPartner("🤖 Бот отзывов: Спасибо за ваш отзыв о Nexumes! Мы передали его разработчику Коле. Вы визуальный премиум-пользователь!");
+                    submitMessageFromPartner("🤖 Бот отзывов: Спасибо за отзыв! Мы передали его Коле.");
                 }, 1000);
             } else if(activeDmFriend === 'ai_osint') {
                 setTimeout(() => {
-                    submitMessageFromPartner("🧠 ИИ Сканер: Фото проанализировано с помощью OSINT нейросети. Свойства EXIF очищены. Картинка сделана на планете Земля!");
+                    submitMessageFromPartner("🧠 ИИ Сканер: Ошибка EXIF данных. Фото безопасно.");
                 }, 1200);
             }
         }
@@ -921,7 +976,7 @@
             msgs.push({ from: currentUser, text: processedText, id: Date.now() });
             localStorage.setItem(key, JSON.stringify(msgs));
             renderDmMessages();
-            play8BitSound(); // Звук уведомления
+            play8BitSound();
         }
 
         function submitMessageFromPartner(botText) {
@@ -939,13 +994,11 @@
             let msgs = JSON.parse(localStorage.getItem(key)) || [];
             let container = document.getElementById('dm-messages-container');
             
-            // Фишка 5.3: Отображение "Удаленных сообщений"
             container.innerHTML = msgs.map(m => {
                 let cls = m.from === currentUser ? 'sent' : 'received';
                 return `
                     <div class="dm-msg ${cls}" id="msg-${m.id}">
                         <strong>@${m.from}:</strong> ${m.text}
-                        <span style="font-size:8px; opacity:0.3; display:block; text-align:right;">Nexumes Secure Protocol</span>
                         <button style="position:absolute; top:-2px; right:-15px; background:none; border:none; color:red; font-size:10px; cursor:pointer;" onclick="simulateDeleteMessage(${m.id})">❌</button>
                     </div>
                 `;
@@ -953,14 +1006,12 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // Фишка 5.3: Демонстрация того, что удаленные сообщения по-прежнему видно
         function simulateDeleteMessage(id) {
-            alert("🔒 Фишка 5.3 В действии: Собеседник удалил сообщение, но благодаря Nexumes Mods оно сохранено на твоем экране!");
+            alert("🔒 Попытка удаления: Сообщение сохранено анти-удалением Nexumes!");
             let el = document.getElementById('msg-'+id);
-            if(el) { el.style.border = "2px dashed red"; el.style.opacity = "0.8"; }
+            if(el) { el.style.border = "2px dashed red"; }
         }
 
-        // СИСТЕМА ПЕРЕКЛЮЧЕНИЯ МОДОВ
         function toggleMod(modKey) {
             modsState[modKey] = !modsState[modKey];
             let btn = document.getElementById('mod-' + modKey);
@@ -970,87 +1021,49 @@
             }
         }
 
-        // Фишка 10: Одновременный тап отключения блюра и анимаций интерфейса
         let blurModeActive = false;
         function toggleBlurToggle() {
             blurModeActive = !blurModeActive;
-            if(blurModeActive) {
-                document.body.classList.add('no-blur');
-                document.getElementById('blur-btn').innerText = 'Удален (Макс. Скорость)';
-                document.getElementById('blur-btn').style.background = '#e63946';
-            } else {
-                document.body.classList.remove('no-blur');
-                document.getElementById('blur-btn').innerText = 'Отключено';
-                document.getElementById('blur-btn').style.background = 'var(--highlight)';
-            }
+            document.body.classList.toggle('no-blur', blurModeActive);
+            document.getElementById('blur-btn').innerText = blurModeActive ? 'Удален' : 'Отключено';
         }
 
-        // Включение переливающихся фонов (Фишка 9)
         let gradientActive = false;
         function toggleGradientBg() {
             gradientActive = !gradientActive;
-            if(gradientActive) {
-                document.body.classList.add('gradient-bg-active');
-                document.getElementById('gradient-btn').innerText = "Активен (10с)";
-            } else {
-                document.body.classList.remove('gradient-bg-active');
-                document.getElementById('gradient-btn').innerText = "Включить";
-            }
+            document.body.classList.toggle('gradient-bg-active', gradientActive);
+            document.getElementById('gradient-btn').innerText = gradientActive ? "Активен" : "Включить";
         }
 
-        // Включение шрифтов (Фишка 14)
         let fontActive = false;
         function toggleVoidFont() {
             fontActive = !fontActive;
-            if(fontActive) {
-                document.body.classList.add('void-font-active');
-                document.getElementById('font-btn').innerText = "Активен";
-            } else {
-                document.body.classList.remove('void-font-active');
-                document.getElementById('font-btn').innerText = "Включить";
-            }
+            document.body.classList.toggle('void-font-active', fontActive);
+            document.getElementById('font-btn').innerText = fontActive ? "Активен" : "Включить";
         }
 
-        // Размытие кружочков (Фишка 17)
-        let circleBlurActive = false;
-        function toggleCircleBlur() {
-            circleBlurActive = !circleBlurActive;
-            if(circleBlurActive) {
-                document.body.classList.add('blur-location-active');
-                document.getElementById('blurcircle-btn').innerText = "Активен";
-            } else {
-                document.body.classList.remove('blur-location-active');
-                document.getElementById('blurcircle-btn').innerText = "Включить";
-            }
-        }
-
-        // СМЕНА ТЕМ
         function changeTheme(theme) {
             document.body.className = '';
             document.body.classList.add('animated-screens');
-            if(blurModeActive) document.body.classList.add('no-blur');
-            if(gradientActive) document.body.classList.add('gradient-bg-active');
-            if(fontActive) document.body.classList.add('void-font-active');
-            if(circleBlurActive) document.body.classList.add('blur-location-active');
-
             if (theme === 'light') document.body.classList.add('light-theme');
             if (theme === 'dark') document.body.classList.add('dark-theme');
             if (theme === 'night') document.body.classList.add('night-chat-theme');
-            alert('Стиль Nexumes перенастроен!');
+            alert('Тема изменена!');
         }
 
         function openCreateChannel() { switchScreen('create-channel-screen'); }
+        
         function submitCreateChannel() {
             let name = document.getElementById('channel-name').value.trim();
             let chUser = document.getElementById('channel-username').value.trim().toLowerCase();
             if (!name || !chUser) return alert('Заполни все поля!');
             if (chUser.startsWith('@')) chUser = chUser.substring(1);
 
-            allUsers.push(chUser);
-            localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
-
             let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
-            channels.push({ name: name, username: '@' + chUser });
+            if(channels.some(c => c.username === '@' + chUser)) return alert('Канал с таким юзом уже есть!');
+
+            // Запоминаем создателя канала
+            channels.push({ name: name, username: '@' + chUser, creator: currentUser });
             localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
 
             document.getElementById('channel-name').value = '';
@@ -1066,12 +1079,72 @@
             if (file && currentUser) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    let av = document.getElementById('main-avatar');
-                    av.style.backgroundImage = `url('${e.target.result}')`; av.innerText = '';
+                    document.getElementById('main-avatar').style.backgroundImage = `url('${e.target.result}')`;
+                    document.getElementById('main-avatar').innerText = '';
                     localStorage.setItem(AVATARS_KEY + currentUser, e.target.result);
                 };
                 reader.readAsDataURL(file);
             }
+        }
+
+        // --- ЛOГИКА БOТА-КЛИКЕРА ВИНОГРАДА ---
+        function updateClickerUI() {
+            let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
+            let clicks = parseInt(localStorage.getItem(CLICKS_TODAY_KEY + currentUser)) || 0;
+            let lastDate = localStorage.getItem(LAST_CLICK_DATE_KEY + currentUser) || "";
+            let today = new Date().toDateString();
+
+            if (lastDate !== today) {
+                clicks = 0;
+                localStorage.setItem(CLICKS_TODAY_KEY + currentUser, 0);
+                localStorage.setItem(LAST_CLICK_DATE_KEY + currentUser, today);
+            }
+
+            document.getElementById('grape-balance').innerText = balance;
+            document.getElementById('clicks-today').innerText = clicks;
+        }
+
+        function clickGrape() {
+            if(!currentUser) return alert('Сначала войдите в аккаунт!');
+            
+            let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
+            let clicks = parseInt(localStorage.getItem(CLICKS_TODAY_KEY + currentUser)) || 0;
+            let today = new Date().toDateString();
+
+            if(clicks >= 100) {
+                alert("🛑 Бот-кликер: Дневной лимит кликов (100 кликов) исчерпан! Приходи завтра.");
+                return;
+            }
+
+            clicks++;
+            localStorage.setItem(CLICKS_TODAY_KEY + currentUser, clicks);
+
+            if(clicks % 10 === 0) {
+                balance++;
+                localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
+                play8BitSound();
+            }
+
+            updateClickerUI();
+        }
+
+        // ПОКУПКА НАСТОЯЩЕГО ПРЕМИУМА ЗА 1000 ВИНОГРАДИН
+        function buyPremiumWithGrapes() {
+            let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
+            if(balance < 1000) {
+                alert(`⚠️ Недостаточно винограда! У тебя ${balance}/1000 🍇. Кликай дальше!`);
+                return;
+            }
+
+            balance -= 1000;
+            localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
+            localStorage.setItem(PREMIUM_KEY + currentUser, 'true');
+            
+            document.getElementById('premium-badge').innerText = "⭐ PREMIUM MEMBERSHIP ACTIVE";
+            document.getElementById('premium-badge').style.color = "#00ffcc";
+            
+            updateClickerUI();
+            alert("🎉 Ура! Ты купил настоящий PREMIUM статус на месяц за виноград! Твой профиль обновлен.");
         }
 
         if (!loadSavedAccount()) { switchScreen('login-screen'); }
