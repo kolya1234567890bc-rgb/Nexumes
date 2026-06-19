@@ -123,7 +123,7 @@
             display: none;
             flex: 1;
             overflow-y: auto;
-            padding-bottom: 80px; 
+            padding-bottom: 90px; 
             flex-direction: column;
             align-items: center;
             width: 100%;
@@ -351,7 +351,7 @@
 
         .btn-action { background: var(--highlight); color: white; border: 2px solid black; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        /* Стили для панели стикеров */
+        /* Панель стикеров */
         .sticker-panel {
             display: none;
             background: var(--element-color);
@@ -387,6 +387,38 @@
             transition: transform 0.1s;
         }
         .grape-btn:active { transform: scale(0.85); }
+
+        /* Стили инвентаря подарков */
+        .gift-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 90%;
+            margin-bottom: 15px;
+        }
+        .gift-box-item {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid black;
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-sell {
+            background: #e63946;
+            color: white;
+            border: 1px solid black;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: bold;
+            width: 80%;
+        }
     </style>
 </head>
 <body>
@@ -435,7 +467,7 @@
 
         <div class="search-container">
             <span class="search-icon-inside">🔍</span>
-            <input type="text" id="search-input" class="search-input" placeholder="Глобальный поиск людей по @нику или каналов..." oninput="filterChats()"> 
+            <input type="text" id="search-input" class="search-input" placeholder="Поиск людей по @нику или каналов..." oninput="filterChats()"> 
         </div>
         
         <div class="create-btn" onclick="openCreateChannel()">📢 Создать свой канал</div>
@@ -450,12 +482,6 @@
 
         <div class="section-title">ДРУЗЬЯ И ЛС</div>
         <div class="friends-list" id="friends-list-container"></div>
-
-        <div class="section-title">ДОБАВИТЬ ДРУГА ПО @НИКУ</div> 
-        <div style="width:90%; display:flex; gap:8px; margin-bottom: 20px;">
-            <input type="text" id="friend-input" class="dm-input" placeholder="@username друга">
-            <button class="btn-action" onclick="addFriend()">Добавить</button>
-        </div>
     </div>
 
     <div id="create-channel-screen" class="screen">
@@ -543,7 +569,28 @@
         <label for="avatar-upload" class="btn-purple">📷 Сменить аватарку (Любая картинка)</label> 
         <input type="file" id="avatar-upload" style="display:none;" accept="image/*" onchange="uploadPhoto(event)">
 
+        <div class="clicker-container" style="border: 2px solid #ff007f;">
+            <h3>🎁 Подарить Подарок (Себе или Другу)</h3>
+            <div style="text-align:left; margin-bottom:8px;">
+                <label style="font-size:12px; font-weight:bold;">Кому (@username):</label>
+                <input type="text" id="gift-target-user" class="reg-input" style="padding:8px; margin:4px 0;" placeholder="Например: kolya или свой ник">
+            </div>
+            <div style="text-align:left; margin-bottom:12px;">
+                <label style="font-size:12px; font-weight:bold;">Что дарим:</label>
+                <select id="gift-type-select" class="reg-select" style="padding:8px; margin:4px 0;">
+                    <option value="strawberry">🍓 Клубника (Цена: 5 🍇)</option>
+                    <option value="banana">🍌 Банан (Цена: 10 🍇)</option>
+                    <option value="blackhole">🕳 Черная Дыра (Цена: 50 🍇)</option>
+                    <option value="crown">👑 Корона Лидера (Цена: 150 🍇)</option>
+                    <option value="ghost_gift">👻 Призрак Моддинга (Цена: 300 🍇)</option>
+                    <option value="interceptor">🌌 Интерцептор «DIV-2» (Цена: 1000 🍇)</option>
+                </select>
+            </div>
+            <button class="btn-action" style="background:#ff007f; width:100%; padding:10px;" onclick="sendGiftAction()">✨ Отправить подарок</button>
+        </div>
+
         <div class="menu-block">
+            <div class="menu-item" onclick="switchScreen('my-gifts-screen')">📦 Мой инвентарь подарков <span class="arrow">></span></div>
             <div class="menu-item" onclick="switchScreen('sett-nexumes-mods')">⚡ Модификации Nexumes (Всё включено) <span class="arrow">></span></div>
             <div class="menu-item" onclick="switchScreen('sett-perf')">🔋 Производительность и Герцовка <span class="arrow">></span></div>
             <div class="menu-item" onclick="switchScreen('sett-theme')">🎨 Оформление и Кастомизация <span class="arrow">></span></div>
@@ -553,6 +600,15 @@
         <button class="btn-purple" style="background-color: #2a9d8f; color: white;" onclick="openAiOsintBot()">🔍 ИИ Бот: Поиск локации по фото</button>
         
         <button class="btn-purple" style="background-color: #8b0000; color: white;" onclick="logout()">🚪 Выйти из аккаунта</button>
+    </div>
+
+    <div id="my-gifts-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('settings-screen')">⬅ Назад</button>
+        <h2>Ваша витрина подарков</h2>
+        <p style="font-size:13px; opacity:0.7; text-align:center; width:90%; margin-bottom:20px;">Здесь вы можете посмотреть подарки или продать их обратно за 🍇!</p>
+        
+        <div class="gift-grid" id="gifts-inventory-container">
+            </div>
     </div>
 
     <div id="sett-nexumes-mods" class="screen">
@@ -599,11 +655,12 @@
         const COUNTRIES_KEY = 'nexumes_user_country_';
         const AVATARS_KEY = 'nexumes_avatar_';
         
-        // Ключи кликера
+        // Ключи кликера и подарков
         const GRAPE_BAL_KEY = 'nexumes_grape_bal';
         const CLICKS_TODAY_KEY = 'nexumes_clicks_today';
         const LAST_CLICK_DATE_KEY = 'nexumes_last_click_date';
         const PREMIUM_KEY = 'nexumes_real_premium';
+        const GIFTS_PREFIX = 'nexumes_gifts_';
 
         let currentUser = null;
         let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya'];
@@ -613,6 +670,16 @@
         let modsState = {
             ghost: true, noscreenshot: true, viewdeleted: true, infiniteview: true,
             hideedited: true, faketyping: false, silence: false, autoclean: true, exif: true, hideonline: true
+        };
+
+        // Настройки расширенных подарков и цен
+        const GIFT_CONFIG = {
+            strawberry: { name: 'Клубника', icon: '🍓', price: 5, sellPrice: 4 },
+            banana: { name: 'Банан', icon: '🍌', price: 10, sellPrice: 8 },
+            blackhole: { name: 'Черная дыра', icon: '🕳', price: 50, sellPrice: 40 },
+            crown: { name: 'Корона Лидера', icon: '👑', price: 150, sellPrice: 120 },
+            ghost_gift: { name: 'Призрак Моддинга', icon: '👻', price: 300, sellPrice: 240 },
+            interceptor: { name: 'Интерцептор DIV-2', icon: '🌌', price: 1000, sellPrice: 800 }
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -636,6 +703,7 @@
                 navElement.classList.add('active-nav');
             }
             if (screenId === 'chats-screen') { renderChatsAndFriends(); }
+            if (screenId === 'my-gifts-screen') { updateGiftsInventoryUI(); }
         }
 
         function changeLogoStyle(val) {
@@ -717,7 +785,6 @@
             document.getElementById('display-name').innerText = "Пользователь [" + data.country + "]";
             document.getElementById('display-username').innerText = '@' + data.username;
             
-            // Настоящая проверка Премиума
             if(localStorage.getItem(PREMIUM_KEY + data.username) === 'true') {
                 document.getElementById('premium-badge').innerText = "⭐ PREMIUM MEMBERSHIP ACTIVE";
                 document.getElementById('premium-badge').style.color = "#00ffcc";
@@ -736,6 +803,7 @@
 
             document.getElementById('bottom-nav').style.display = 'flex';
             switchScreen('chats-screen', document.getElementById('nav-chats'));
+            updateClickerUI();
         }
 
         function logout() {
@@ -793,7 +861,7 @@
             }).join('');
         }
 
-        // НОРМАЛЬНЫЙ ГЛOБАЛЬНЫЙ ПОИСК ЛЮДЕЙ И КАНАЛОВ БЕЗ БАГОВ
+        // УМНЫЙ ГЛОБАЛЬНЫЙ ПОИСК (Как в ТГ: ищет и локально, и добавляет из базы)
         function filterChats() {
             let q = document.getElementById('search-input').value.toLowerCase().trim();
             let globalSection = document.getElementById('global-search-section');
@@ -805,23 +873,22 @@
                 return;
             }
 
-            // Локальный фильтр
-            document.querySelectorAll('.chat-list .chat-item, .friends-list .friend-item').forEach(item => {
+            document.querySelectorAll('#chat-list-container .chat-item, #friends-list-container .friend-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
                 item.style.display = text.includes(q) ? 'flex' : 'none';
             });
 
-            // Глобальный поиск по всем пользователям системы
+            // Поиск людей по глобальной базе данных
             let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser && u !== 'bot_reviews' && u !== 'ai_osint');
             
             if(foundUsers.length > 0) {
                 globalSection.style.display = 'block';
                 globalContainer.innerHTML = foundUsers.map(u => `
-                    <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="openDm('${u}')">
+                    <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="addFriendFromSearch('${u}')">
                         <div class="friend-avatar" style="background:var(--highlight)">👤</div>
                         <div class="friend-info">
                             <div class="friend-name">@${u}</div>
-                            <div class="chat-type" style="color:#00ffcc;">Глобальный пользователь • Нажмите чтобы написать</div>
+                            <div class="chat-type" style="color:#00ffcc;">Найдено в Nexumes • Нажмите для диалога</div>
                         </div>
                     </div>
                 `).join('');
@@ -830,27 +897,21 @@
             }
         }
 
-        function addFriend() {
-            let input = document.getElementById('friend-input').value.trim().toLowerCase();
-            if (!input) return;
-            if (input.startsWith('@')) input = input.substring(1);
-            if (input === currentUser) return alert('Нельзя добавить себя!');
-            if (!allUsers.includes(input)) return alert('Пользователь не найден в глобальной базе!');
-
+        function addFriendFromSearch(username) {
             let friends = JSON.parse(localStorage.getItem(FRIENDS_KEY + currentUser)) || [];
-            if (friends.includes(input)) return alert('Уже в друзьях!');
-            friends.push(input);
-            localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
-
-            document.getElementById('friend-input').value = '';
-            renderChatsAndFriends();
-            alert('Пользователь добавлен!');
+            if (!friends.includes(username)) {
+                friends.push(username);
+                localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
+            }
+            document.getElementById('search-input').value = '';
+            document.getElementById('global-search-section').style.display = 'none';
+            openDm(username);
         }
 
         function openDm(friend) {
             activeDmFriend = friend;
             document.getElementById('dm-partner-name').innerHTML = `<span>Чат с @${friend}</span>`;
-            document.getElementById('dm-controls-area').style.display = 'flex'; // Показываем ввод
+            document.getElementById('dm-controls-area').style.display = 'flex';
             
             let typingEl = document.getElementById('fake-typing-status');
             typingEl.style.display = (modsState.faketyping || friend.includes('bot')) ? 'block' : 'none';
@@ -859,19 +920,17 @@
             switchScreen('dm-screen');
         }
 
-        // ОТКРЫТИЕ КАНАЛА (Только создатель может писать)
         function openChannelChat(chUsername, chName) {
-            activeDmFriend = chUsername; // Юз канала
+            activeDmFriend = chUsername; 
             document.getElementById('dm-partner-name').innerHTML = `<span>📢 Канал: ${chName}</span>`;
             
             let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
             let currentChannel = channels.find(c => c.username === chUsername);
             
-            // Если у канала нет создателя (старый канал) или создатель — текущий юзер
             if(!currentChannel.creator || currentChannel.creator === currentUser) {
-                document.getElementById('dm-controls-area').style.display = 'flex'; // Можно писать
+                document.getElementById('dm-controls-area').style.display = 'flex';
             } else {
-                document.getElementById('dm-controls-area').style.display = 'none'; // Нельзя писать, только просмотр!
+                document.getElementById('dm-controls-area').style.display = 'none';
             }
             
             renderDmMessages();
@@ -898,14 +957,12 @@
             panel.style.display = panel.style.display === 'grid' ? 'none' : 'grid';
         }
 
-        // ФУНКЦИЯ ОТПРАВКИ ЛЮБЫХ СТИКЕРОВ В ЧАТ
         function sendSticker(sticker) {
             let content = `<div style="font-size: 80px; transform: scale(1); animation: pulse 2s infinite; display:inline-block;">${sticker}</div>`;
             submitMessageToStorage(content);
             document.getElementById('sticker-selector-panel').style.display = 'none';
         }
 
-        // ФУНКЦИЯ ОТПРАВКИ ЛЮБЫХ ФОТО В ЧАТ С УСТРОЙСТВА
         function sendImageMessage(event) {
             let file = event.target.files[0];
             if (file) {
@@ -1062,7 +1119,6 @@
             let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
             if(channels.some(c => c.username === '@' + chUser)) return alert('Канал с таким юзом уже есть!');
 
-            // Запоминаем создателя канала
             channels.push({ name: name, username: '@' + chUser, creator: currentUser });
             localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
 
@@ -1089,6 +1145,7 @@
 
         // --- ЛOГИКА БOТА-КЛИКЕРА ВИНОГРАДА ---
         function updateClickerUI() {
+            if (!currentUser) return;
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
             let clicks = parseInt(localStorage.getItem(CLICKS_TODAY_KEY + currentUser)) || 0;
             let lastDate = localStorage.getItem(LAST_CLICK_DATE_KEY + currentUser) || "";
@@ -1128,7 +1185,6 @@
             updateClickerUI();
         }
 
-        // ПОКУПКА НАСТОЯЩЕГО ПРЕМИУМА ЗА 1000 ВИНОГРАДИН
         function buyPremiumWithGrapes() {
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
             if(balance < 1000) {
@@ -1145,6 +1201,86 @@
             
             updateClickerUI();
             alert("🎉 Ура! Ты купил настоящий PREMIUM статус на месяц за виноград! Твой профиль обновлен.");
+        }
+
+
+        // --- СИСТЕМА ПОДАРКОВ + ПРОДАЖА ЗА ВАЛЮТУ ---
+        function sendGiftAction() {
+            if(!currentUser) return alert('Вы не авторизованы!');
+            
+            let targetUser = document.getElementById('gift-target-user').value.trim().toLowerCase();
+            let giftType = document.getElementById('gift-type-select').value;
+
+            if(!targetUser) return alert('Укажите @username получателя!');
+            if(targetUser.startsWith('@')) targetUser = targetUser.substring(1);
+
+            if(!allUsers.includes(targetUser)) {
+                return alert('Пользователь с таким ником не найден в глобальной базе Nexumes!');
+            }
+
+            let price = GIFT_CONFIG[giftType].price;
+            let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
+
+            if(balance < price) {
+                return alert(`⚠️ Недостаточно винограда! Подарок стоит ${price} 🍇, а у вас всего ${balance} 🍇.`);
+            }
+
+            balance -= price;
+            localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
+            updateClickerUI();
+
+            let targetGifts = JSON.parse(localStorage.getItem(GIFTS_PREFIX + targetUser)) || {};
+            targetGifts[giftType] = (targetGifts[giftType] || 0) + 1;
+            localStorage.setItem(GIFTS_PREFIX + targetUser, JSON.stringify(targetGifts));
+
+            play8BitSound();
+            alert(`🎉 Успешно отправлен подарок ${GIFT_CONFIG[giftType].icon} ${GIFT_CONFIG[giftType].name} для @${targetUser}! Списано: ${price} 🍇`);
+            document.getElementById('gift-target-user').value = '';
+        }
+
+        function updateGiftsInventoryUI() {
+            if(!currentUser) return;
+            let myGifts = JSON.parse(localStorage.getItem(GIFTS_PREFIX + currentUser)) || {};
+            let container = document.getElementById('gifts-inventory-container');
+            
+            let html = '';
+            for (let key in GIFT_CONFIG) {
+                let count = myGifts[key] || 0;
+                let config = GIFT_CONFIG[key];
+                html += `
+                    <div class="gift-box-item">
+                        <div style="font-size:32px;">${config.icon}</div>
+                        <div style="font-size:13px; font-weight:bold; margin-top:5px;">${config.name}</div>
+                        <div style="font-size:12px; opacity:0.7;">В наличии: <strong style="color:var(--highlight); font-size:14px;">${count}</strong></div>
+                        <div style="font-size:11px; color:#00ffcc; margin-top:3px;">Цена сдачи: ${config.sellPrice} 🍇</div>
+                        ${count > 0 ? `<button class="btn-sell" onclick="sellGiftAction('${key}')">Продать за 🍇</button>` : ''}
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function sellGiftAction(giftKey) {
+            if(!currentUser) return;
+            let myGifts = JSON.parse(localStorage.getItem(GIFTS_PREFIX + currentUser)) || {};
+            
+            if(!myGifts[giftKey] || myGifts[giftKey] <= 0) return alert('У вас нет этого подарка!');
+            
+            let config = GIFT_CONFIG[giftKey];
+            
+            // Забираем подарок
+            myGifts[giftKey]--;
+            localStorage.setItem(GIFTS_PREFIX + currentUser, JSON.stringify(myGifts));
+            
+            // Начисляем виноград
+            let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
+            balance += config.sellPrice;
+            localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
+            
+            play8BitSound();
+            updateClickerUI();
+            updateGiftsInventoryUI();
+            alert(`💰 Вы успешно продали ${config.icon} ${config.name} обратно системе и получили ${config.sellPrice} 🍇!`);
         }
 
         if (!loadSavedAccount()) { switchScreen('login-screen'); }
