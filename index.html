@@ -30,7 +30,7 @@
             --highlight: #bb86fc;
         }
 
-        /* Фишка 7: Ночной чат */
+        /* Ночной чат */
         .night-chat-theme {
             --bg-color: #020005;
             --element-color: #0d001a;
@@ -272,10 +272,6 @@
             align-items: center;
             justify-content: center;
         }
-        .blur-location-active .video-circle {
-            backdrop-filter: blur(8px) !important;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
 
         .dm-input-area { width: 90%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
         .dm-input-wrapper { display: flex; gap: 5px; align-items: center; width: 100%; }
@@ -351,7 +347,6 @@
 
         .btn-action { background: var(--highlight); color: white; border: 2px solid black; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        /* Панель стикеров */
         .sticker-panel {
             display: none;
             background: var(--element-color);
@@ -367,7 +362,6 @@
         .sticker-option { font-size: 35px; text-align: center; cursor: pointer; transition: 0.2s; }
         .sticker-option:hover { transform: scale(1.2); }
 
-        /* Кликер дизайн */
         .clicker-container {
             width: 90%;
             background: rgba(0,0,0,0.3);
@@ -388,7 +382,6 @@
         }
         .grape-btn:active { transform: scale(0.85); }
 
-        /* Стили инвентаря подарков */
         .gift-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -634,13 +627,12 @@
         <h2>Ваша витрина подарков</h2>
         <p style="font-size:13px; opacity:0.7; text-align:center; width:90%; margin-bottom:20px;">Здесь вы можете посмотреть подарки или продать их обратно за 🍇!</p>
         
-        <div class="gift-grid" id="gifts-inventory-container">
-            </div>
+        <div class="gift-grid" id="gifts-inventory-container"></div>
     </div>
 
     <div id="sett-nexumes-mods" class="screen">
         <button class="back-btn" onclick="switchScreen('settings-screen')">⬅ Назад</button>
-        <h2>Функции Nexumes Mods</h2>
+        <h2>Анатомия Nexumes Mods</h2>
         
         <div class="setting-row"><span>👁️ Режим Призрака</span><button class="btn-action" id="mod-ghost" onclick="toggleMod('ghost')">ВКЛ</button></div>
         <div class="setting-row"><span>🛑 Анти-Уведомление о скринах</span><button class="btn-action" id="mod-noscreenshot" onclick="toggleMod('noscreenshot')">ВКЛ</button></div>
@@ -681,9 +673,8 @@
         const MSGS_KEY = 'nexumes_msgs_';
         const COUNTRIES_KEY = 'nexumes_user_country_';
         const AVATARS_KEY = 'nexumes_avatar_';
-        const EMAILS_KEY = 'nexumes_emails_'; // База почт
+        const EMAILS_KEY = 'nexumes_emails_';
         
-        // Ключи кликера и подарков
         const GRAPE_BAL_KEY = 'nexumes_grape_bal';
         const CLICKS_TODAY_KEY = 'nexumes_clicks_today';
         const LAST_CLICK_DATE_KEY = 'nexumes_last_click_date';
@@ -692,7 +683,8 @@
         const GIFTS_PREFIX = 'nexumes_gifts_';
 
         let currentUser = null;
-        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya', 'void_creator'];
+        let defaultUsers = ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya', 'void_creator'];
+        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
         let activeDmFriend = null;
         
         let cipherModeActive = false;
@@ -701,7 +693,6 @@
             hideedited: true, faketyping: false, silence: false, autoclean: true, exif: true, hideonline: true
         };
 
-        // Настройки расширенных подарков и цен
         const GIFT_CONFIG = {
             strawberry: { name: 'Клубника', icon: '🍓', price: 5, sellPrice: 4 },
             banana: { name: 'Банан', icon: '🍌', price: 10, sellPrice: 8 },
@@ -774,6 +765,8 @@
             if (!input) return alert('Введите юзернейм!');
             if (!email || !email.includes('@')) return alert('Введите корректный Email!');
             if (input.startsWith('@')) input = input.substring(1);
+            
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             if (allUsers.includes(input)) return alert('Этот ник занят!');
 
             allUsers.push(input);
@@ -794,19 +787,18 @@
             if (!input) return alert('Введите @username');
             if (input.startsWith('@')) input = input.substring(1);
 
-            // Если пользователя нет в базе — создаем его
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
+
             if (!allUsers.includes(input)) {
                 if (!email || !email.includes('@')) return alert('Вы первый раз заходите под этим ником. Укажите почту для регистрации!');
                 allUsers.push(input);
                 localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
                 localStorage.setItem(EMAILS_KEY + input, email);
             } else {
-                // Если пользователь есть, проверяем привязанную почту
                 let savedEmail = localStorage.getItem(EMAILS_KEY + input);
                 if (savedEmail && savedEmail !== email) {
                     return alert('Неверная почта для этого аккаунта!');
                 }
-                // Если у старого акка не было почты, но он входит, даем войти и запишем почту
                 if (!savedEmail && email) {
                     localStorage.setItem(EMAILS_KEY + input, email);
                 }
@@ -821,6 +813,7 @@
 
         function loadSavedAccount() {
             let data = JSON.parse(localStorage.getItem('nexumes_user'));
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             if (data && allUsers.includes(data.username)) {
                 currentUser = data.username;
                 applyAccountData(data);
@@ -833,17 +826,15 @@
             document.getElementById('display-name').innerText = "Пользователь [" + data.country + "]";
             document.getElementById('display-username').innerText = '@' + data.username;
             
-            // Проверка почты для отображения
             let userEmail = localStorage.getItem(EMAILS_KEY + data.username);
             if (userEmail) {
                 document.getElementById('display-email-text').innerText = userEmail;
                 document.getElementById('link-email-btn').style.display = 'none';
             } else {
                 document.getElementById('display-email-text').innerText = "Почта не привязана";
-                document.getElementById('link-email-btn').style.display = 'block'; // Кнопка привязки
+                document.getElementById('link-email-btn').style.display = 'block';
             }
 
-            // Проверка Премиума по дате
             let isPremium = localStorage.getItem(PREMIUM_KEY + data.username) === 'true';
             let premiumUntil = localStorage.getItem(PREMIUM_UNTIL_KEY + data.username);
             
@@ -851,7 +842,6 @@
                 if (premiumUntil) {
                     let now = new Date().getTime();
                     if (now > parseInt(premiumUntil)) {
-                        // Срок прошёл
                         localStorage.setItem(PREMIUM_KEY + data.username, 'false');
                         document.getElementById('premium-badge').innerText = "⭐ VISUAL PREMIUM ACTIVE";
                         document.getElementById('premium-badge').style.color = "#ffb703";
@@ -869,7 +859,6 @@
                 document.getElementById('premium-badge').style.color = "#ffb703";
             }
 
-            // Показ админки для void_creator
             if (data.username === 'void_creator') {
                 document.getElementById('void-admin-panel').style.display = 'block';
             } else {
@@ -956,7 +945,6 @@
             }).join('');
         }
 
-        // ИСПРАВЛЕННЫЙ НОРМАЛЬНЫЙ ПОИСК ДРУЗЕЙ И КАНАЛОВ
         function filterChats() {
             let q = document.getElementById('search-input').value.toLowerCase().trim();
             let globalSection = document.getElementById('global-search-section');
@@ -968,13 +956,12 @@
                 return;
             }
 
-            // Фильтруем текущие списки на экране
             document.querySelectorAll('#chat-list-container .chat-item, #friends-list-container .friend-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
                 item.style.display = text.includes(q) ? 'flex' : 'none';
             });
 
-            // Поиск людей по глобальной базе данных
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser && u !== 'bot_reviews' && u !== 'ai_osint');
             
             if(foundUsers.length > 0) {
@@ -1239,7 +1226,6 @@
             }
         }
 
-        // --- ЛOГИКА БOТА-КЛИКЕРА ВИНОГРАДА ---
         function updateClickerUI() {
             if (!currentUser) return;
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
@@ -1290,7 +1276,6 @@
             balance -= 1000;
             localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
             
-            // Покупка из винограда дает премиум на 30 дней
             let expirationTime = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
             localStorage.setItem(PREMIUM_KEY + currentUser, 'true');
             localStorage.setItem(PREMIUM_UNTIL_KEY + currentUser, expirationTime.toString());
@@ -1303,8 +1288,6 @@
             alert("🎉 Ура! Ты купил настоящий PREMIUM статус на месяц за виноград! Твой профиль обновлен.");
         }
 
-
-        // --- СИСТЕМА ПОДАРКОВ + ПРОДАЖА ЗА ВАЛЮТУ ---
         function sendGiftAction() {
             if(!currentUser) return alert('Вы не авторизованы!');
             
@@ -1314,6 +1297,7 @@
             if(!targetUser) return alert('Укажите @username получателя!');
             if(targetUser.startsWith('@')) targetUser = targetUser.substring(1);
 
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             if(!allUsers.includes(targetUser)) {
                 return alert('Пользователь с таким ником не найден в глобальной базе Nexumes!');
             }
@@ -1368,11 +1352,9 @@
             
             let config = GIFT_CONFIG[giftKey];
             
-            // Забираем подарок
             myGifts[giftKey]--;
             localStorage.setItem(GIFTS_PREFIX + currentUser, JSON.stringify(myGifts));
             
-            // Начисляем виноград
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
             balance += config.sellPrice;
             localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
@@ -1383,12 +1365,12 @@
             alert(`💰 Вы успешно продали ${config.icon} ${config.name} обратно системе и получили ${config.sellPrice} 🍇!`);
         }
 
-        // --- АДМИН-ФУНКЦИИ (ДЛЯ void_creator) ---
         function adminGiveGrapes() {
             let target = document.getElementById('admin-target-user').value.trim().toLowerCase();
             let amount = parseInt(document.getElementById('admin-grape-amount').value);
             
             if (target.startsWith('@')) target = target.substring(1);
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             if (!allUsers.includes(target)) return alert('Пользователь не найден!');
             if (isNaN(amount) || amount <= 0) return alert('Укажите нормальное количество винограда!');
             
@@ -1404,6 +1386,7 @@
             let days = parseInt(document.getElementById('admin-premium-select').value);
             
             if (target.startsWith('@')) target = target.substring(1);
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             if (!allUsers.includes(target)) return alert('Пользователь не найден!');
             
             let addTime = days * 24 * 60 * 60 * 1000;
