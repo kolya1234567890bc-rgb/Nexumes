@@ -956,55 +956,28 @@
                 return;
             }
 
-            // Фильтруем текущие списки каналов и друзей на экране
             document.querySelectorAll('#chat-list-container .chat-item, #friends-list-container .friend-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
                 item.style.display = text.includes(q) ? 'flex' : 'none';
             });
 
-            // Загружаем глобальный список пользователей
             allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
-            
-            // Находим совпадения
             let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser && u !== 'bot_reviews' && u !== 'ai_osint');
             
-            globalSection.style.display = 'block';
-            
-            let itemsHtml = foundUsers.map(u => `
-                <div class="friend-item" style="border: 2px solid var(--highlight); margin-bottom: 8px;" onclick="addFriendFromSearch('${u}')">
-                    <div class="friend-avatar" style="background:var(--highlight)">👤</div>
-                    <div class="friend-info">
-                        <div class="friend-name">@${u}</div>
-                        <div class="chat-type" style="color:#00ffcc;">Нажмите для чата, подарков и настроек</div>
-                    </div>
-                </div>
-            `).join('');
-
-            // Если точного совпадения нет, предлагаем создать/добавить этого пользователя в базу
-            if (!allUsers.includes(q) && q.length > 1) {
-                itemsHtml += `
-                    <div class="friend-item" style="border: 2px dashed #ff007f; background: rgba(255,0,127,0.1);" onclick="forceCreateUserFromSearch('${q}')">
-                        <div class="friend-avatar" style="background:#ff007f">✨</div>
+            if(foundUsers.length > 0) {
+                globalSection.style.display = 'block';
+                globalContainer.innerHTML = foundUsers.map(u => `
+                    <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="addFriendFromSearch('${u}')">
+                        <div class="friend-avatar" style="background:var(--highlight)">👤</div>
                         <div class="friend-info">
-                            <div class="friend-name" style="color:#ff007f;">Создать аккаунт @${q}</div>
-                            <div class="chat-type">Добавить в глобальную базу людей и открыть профиль</div>
+                            <div class="friend-name">@${u}</div>
+                            <div class="chat-type" style="color:#00ffcc;">Найдено в Nexumes • Нажмите для диалога</div>
                         </div>
                     </div>
-                `;
+                `).join('');
+            } else {
+                globalSection.style.display = 'none';
             }
-
-            globalContainer.innerHTML = itemsHtml;
-        }
-
-        function forceCreateUserFromSearch(username) {
-            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
-            if(!allUsers.includes(username)) {
-                allUsers.push(username);
-                localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
-                localStorage.setItem(COUNTRIES_KEY + username, 'UA');
-                localStorage.setItem(EMAILS_KEY + username, username + '@nexumes.com');
-            }
-            addFriendFromSearch(username);
         }
 
         function addFriendFromSearch(username) {
@@ -1013,15 +986,8 @@
                 friends.push(username);
                 localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
             }
-            
-            // Автоматически подставляем выбранного человека в форму подарков и в админку
-            document.getElementById('gift-target-user').value = username;
-            document.getElementById('admin-target-user').value = username;
-
             document.getElementById('search-input').value = '';
             document.getElementById('global-search-section').style.display = 'none';
-            
-            alert(`👤 Пользователь @${username} выбран! Его ник установлен в поля подарков и админ-панели.`);
             openDm(username);
         }
 
@@ -1353,6 +1319,7 @@
 
             play8BitSound();
             alert(`🎉 Успешно отправлен подарок ${GIFT_CONFIG[giftType].icon} ${GIFT_CONFIG[giftType].name} для @${targetUser}! Списано: ${price} 🍇`);
+            document.getElementById('gift-target-user').value = '';
         }
 
         function updateGiftsInventoryUI() {
