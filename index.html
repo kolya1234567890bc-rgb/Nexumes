@@ -437,6 +437,7 @@
                 <option value="💀 Глитч Матрица">Логотип: 💀 Кибер Глитч</option>
             </select>
             <input type="text" id="login-username" class="reg-input" placeholder="Ваш @username" />
+            <input type="email" id="login-email" class="reg-input" placeholder="Ваша почта (Email)" />
             <button class="reg-input" style="background: var(--highlight); color:white; font-weight:bold; cursor:pointer;" onclick="loginUser()">Войти</button>
             <p style="margin-top:12px;">Нет аккаунта? <a href="#" onclick="switchScreen('register-screen')" style="color:var(--highlight); font-weight:bold; text-decoration:none;">Создать аккаунт</a></p>
         </div>
@@ -447,6 +448,7 @@
         <div class="reg-box">
             <h2>Регистрация в Nexumes</h2>
             <input type="text" id="username-input" class="reg-input" placeholder="Придумай уникальный ник (без @)" /> 
+            <input type="email" id="email-input" class="reg-input" placeholder="Введите ваш Email" /> 
             <select id="country-input" class="reg-select">
                 <option value="UA">🇺🇦 Украина</option>
                 <option value="RU">🇷🇺 Россия</option>
@@ -467,7 +469,7 @@
 
         <div class="search-container">
             <span class="search-icon-inside">🔍</span>
-            <input type="text" id="search-input" class="search-input" placeholder="Поиск людей по @нику или каналов..." oninput="filterChats()"> 
+            <input type="text" id="search-input" class="search-input" placeholder="Поиск по нику, друзьям или каналам..." oninput="filterChats()"> 
         </div>
         
         <div class="create-btn" onclick="openCreateChannel()">📢 Создать свой канал</div>
@@ -551,8 +553,33 @@
             <div class="profile-name" id="display-name">NEXUMES USER</div>
             <div style="color:#ffb703; font-size:12px; font-weight:bold; margin-bottom:5px;" id="premium-badge">⭐ VISUAL PREMIUM ACTIVE</div>
             <div class="profile-links">
-                <span>Номер скрыт</span>
+                <span id="display-email-text">Почта не привязана</span>
                 <span id="display-username">@юз</span>
+            </div>
+        </div>
+
+        <button id="link-email-btn" class="btn-purple" style="background:#e63946; color:white; display:none;" onclick="linkEmailManually()">⚠️ Привязать почту к аккаунту</button>
+
+        <div id="void-admin-panel" class="clicker-container" style="border: 3px solid #ff007f; display:none; background: rgba(26,0,51,0.8);">
+            <h3 style="color:#ff007f; text-shadow: 0 0 10px #ff007f;">🔮 Void Creator Control Panel</h3>
+            <div style="text-align:left; margin-bottom:8px;">
+                <label style="font-size:12px; font-weight:bold;">Кому выдать ресурсы (@username):</label>
+                <input type="text" id="admin-target-user" class="reg-input" style="padding:8px; margin:4px 0;" placeholder="Ник пользователя">
+            </div>
+            <div style="text-align:left; margin-bottom:8px;">
+                <label style="font-size:12px; font-weight:bold;">Сколько выдать Винограда (🍇):</label>
+                <input type="number" id="admin-grape-amount" class="reg-input" style="padding:8px; margin:4px 0;" placeholder="Количество">
+                <button class="btn-action" style="background:#7209b7; width:100%; margin-top:5px;" onclick="adminGiveGrapes()">Выдать виноград</button>
+            </div>
+            <hr style="border-color:#ff007f; margin:15px 0;">
+            <div style="text-align:left; margin-bottom:8px;">
+                <label style="font-size:12px; font-weight:bold;">Выдать статус PREMIUM:</label>
+                <select id="admin-premium-select" class="reg-select" style="padding:8px; margin:4px 0;">
+                    <option value="7">⭐ 1 Неделя Premium</option>
+                    <option value="30">🔮 1 Месяц Premium</option>
+                    <option value="365">👑 1 Год Premium</option>
+                </select>
+                <button class="btn-action" style="background:#00ffcc; color:black; width:100%; margin-top:5px;" onclick="adminGivePremium()">Активировать Премиум</button>
             </div>
         </div>
 
@@ -654,16 +681,18 @@
         const MSGS_KEY = 'nexumes_msgs_';
         const COUNTRIES_KEY = 'nexumes_user_country_';
         const AVATARS_KEY = 'nexumes_avatar_';
+        const EMAILS_KEY = 'nexumes_emails_'; // База почт
         
         // Ключи кликера и подарков
         const GRAPE_BAL_KEY = 'nexumes_grape_bal';
         const CLICKS_TODAY_KEY = 'nexumes_clicks_today';
         const LAST_CLICK_DATE_KEY = 'nexumes_last_click_date';
         const PREMIUM_KEY = 'nexumes_real_premium';
+        const PREMIUM_UNTIL_KEY = 'nexumes_premium_until_';
         const GIFTS_PREFIX = 'nexumes_gifts_';
 
         let currentUser = null;
-        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya'];
+        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya', 'void_creator'];
         let activeDmFriend = null;
         
         let cipherModeActive = false;
@@ -739,14 +768,18 @@
 
         function registerUser() {
             let input = document.getElementById('username-input').value.trim().toLowerCase();
+            let email = document.getElementById('email-input').value.trim();
             let country = document.getElementById('country-input').value;
+            
             if (!input) return alert('Введите юзернейм!');
+            if (!email || !email.includes('@')) return alert('Введите корректный Email!');
             if (input.startsWith('@')) input = input.substring(1);
             if (allUsers.includes(input)) return alert('Этот ник занят!');
 
             allUsers.push(input);
             localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
             localStorage.setItem(COUNTRIES_KEY + input, country);
+            localStorage.setItem(EMAILS_KEY + input, email);
 
             let accountData = { username: input, country: country };
             localStorage.setItem('nexumes_user', JSON.stringify(accountData));
@@ -756,12 +789,27 @@
 
         function loginUser() {
             let input = document.getElementById('login-username').value.trim().toLowerCase();
+            let email = document.getElementById('login-email').value.trim();
+            
             if (!input) return alert('Введите @username');
             if (input.startsWith('@')) input = input.substring(1);
 
+            // Если пользователя нет в базе — создаем его
             if (!allUsers.includes(input)) {
+                if (!email || !email.includes('@')) return alert('Вы первый раз заходите под этим ником. Укажите почту для регистрации!');
                 allUsers.push(input);
                 localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
+                localStorage.setItem(EMAILS_KEY + input, email);
+            } else {
+                // Если пользователь есть, проверяем привязанную почту
+                let savedEmail = localStorage.getItem(EMAILS_KEY + input);
+                if (savedEmail && savedEmail !== email) {
+                    return alert('Неверная почта для этого аккаунта!');
+                }
+                // Если у старого акка не было почты, но он входит, даем войти и запишем почту
+                if (!savedEmail && email) {
+                    localStorage.setItem(EMAILS_KEY + input, email);
+                }
             }
 
             let savedCountry = localStorage.getItem(COUNTRIES_KEY + input) || 'UA';
@@ -785,12 +833,47 @@
             document.getElementById('display-name').innerText = "Пользователь [" + data.country + "]";
             document.getElementById('display-username').innerText = '@' + data.username;
             
-            if(localStorage.getItem(PREMIUM_KEY + data.username) === 'true') {
-                document.getElementById('premium-badge').innerText = "⭐ PREMIUM MEMBERSHIP ACTIVE";
-                document.getElementById('premium-badge').style.color = "#00ffcc";
+            // Проверка почты для отображения
+            let userEmail = localStorage.getItem(EMAILS_KEY + data.username);
+            if (userEmail) {
+                document.getElementById('display-email-text').innerText = userEmail;
+                document.getElementById('link-email-btn').style.display = 'none';
+            } else {
+                document.getElementById('display-email-text').innerText = "Почта не привязана";
+                document.getElementById('link-email-btn').style.display = 'block'; // Кнопка привязки
+            }
+
+            // Проверка Премиума по дате
+            let isPremium = localStorage.getItem(PREMIUM_KEY + data.username) === 'true';
+            let premiumUntil = localStorage.getItem(PREMIUM_UNTIL_KEY + data.username);
+            
+            if (isPremium) {
+                if (premiumUntil) {
+                    let now = new Date().getTime();
+                    if (now > parseInt(premiumUntil)) {
+                        // Срок прошёл
+                        localStorage.setItem(PREMIUM_KEY + data.username, 'false');
+                        document.getElementById('premium-badge').innerText = "⭐ VISUAL PREMIUM ACTIVE";
+                        document.getElementById('premium-badge').style.color = "#ffb703";
+                    } else {
+                        let dateStr = new Date(parseInt(premiumUntil)).toLocaleDateString();
+                        document.getElementById('premium-badge').innerText = `⭐ PREMIUM ACTIVE (до ${dateStr})`;
+                        document.getElementById('premium-badge').style.color = "#00ffcc";
+                    }
+                } else {
+                    document.getElementById('premium-badge').innerText = "⭐ PREMIUM MEMBERSHIP ACTIVE";
+                    document.getElementById('premium-badge').style.color = "#00ffcc";
+                }
             } else {
                 document.getElementById('premium-badge').innerText = "⭐ VISUAL PREMIUM ACTIVE";
                 document.getElementById('premium-badge').style.color = "#ffb703";
+            }
+
+            // Показ админки для void_creator
+            if (data.username === 'void_creator') {
+                document.getElementById('void-admin-panel').style.display = 'block';
+            } else {
+                document.getElementById('void-admin-panel').style.display = 'none';
             }
 
             let av = document.getElementById('main-avatar');
@@ -804,6 +887,18 @@
             document.getElementById('bottom-nav').style.display = 'flex';
             switchScreen('chats-screen', document.getElementById('nav-chats'));
             updateClickerUI();
+        }
+
+        function linkEmailManually() {
+            let email = prompt("Введите ваш Email для привязки к аккаунту:");
+            if (email && email.includes('@')) {
+                localStorage.setItem(EMAILS_KEY + currentUser, email.trim());
+                alert("Почта успешно привязана!");
+                document.getElementById('display-email-text').innerText = email.trim();
+                document.getElementById('link-email-btn').style.display = 'none';
+            } else {
+                alert("Некорректный Email!");
+            }
         }
 
         function logout() {
@@ -861,7 +956,7 @@
             }).join('');
         }
 
-        // УМНЫЙ ГЛОБАЛЬНЫЙ ПОИСК (Как в ТГ: ищет и локально, и добавляет из базы)
+        // ИСПРАВЛЕННЫЙ НОРМАЛЬНЫЙ ПОИСК ДРУЗЕЙ И КАНАЛОВ
         function filterChats() {
             let q = document.getElementById('search-input').value.toLowerCase().trim();
             let globalSection = document.getElementById('global-search-section');
@@ -873,6 +968,7 @@
                 return;
             }
 
+            // Фильтруем текущие списки на экране
             document.querySelectorAll('#chat-list-container .chat-item, #friends-list-container .friend-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
                 item.style.display = text.includes(q) ? 'flex' : 'none';
@@ -1166,7 +1262,6 @@
             
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
             let clicks = parseInt(localStorage.getItem(CLICKS_TODAY_KEY + currentUser)) || 0;
-            let today = new Date().toDateString();
 
             if(clicks >= 100) {
                 alert("🛑 Бот-кликер: Дневной лимит кликов (100 кликов) исчерпан! Приходи завтра.");
@@ -1194,9 +1289,14 @@
 
             balance -= 1000;
             localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
-            localStorage.setItem(PREMIUM_KEY + currentUser, 'true');
             
-            document.getElementById('premium-badge').innerText = "⭐ PREMIUM MEMBERSHIP ACTIVE";
+            // Покупка из винограда дает премиум на 30 дней
+            let expirationTime = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
+            localStorage.setItem(PREMIUM_KEY + currentUser, 'true');
+            localStorage.setItem(PREMIUM_UNTIL_KEY + currentUser, expirationTime.toString());
+            
+            let dateStr = new Date(expirationTime).toLocaleDateString();
+            document.getElementById('premium-badge').innerText = `⭐ PREMIUM ACTIVE (до ${dateStr})`;
             document.getElementById('premium-badge').style.color = "#00ffcc";
             
             updateClickerUI();
@@ -1281,6 +1381,44 @@
             updateClickerUI();
             updateGiftsInventoryUI();
             alert(`💰 Вы успешно продали ${config.icon} ${config.name} обратно системе и получили ${config.sellPrice} 🍇!`);
+        }
+
+        // --- АДМИН-ФУНКЦИИ (ДЛЯ void_creator) ---
+        function adminGiveGrapes() {
+            let target = document.getElementById('admin-target-user').value.trim().toLowerCase();
+            let amount = parseInt(document.getElementById('admin-grape-amount').value);
+            
+            if (target.startsWith('@')) target = target.substring(1);
+            if (!allUsers.includes(target)) return alert('Пользователь не найден!');
+            if (isNaN(amount) || amount <= 0) return alert('Укажите нормальное количество винограда!');
+            
+            let currentBal = parseInt(localStorage.getItem(GRAPE_BAL_KEY + target)) || 0;
+            localStorage.setItem(GRAPE_BAL_KEY + target, currentBal + amount);
+            
+            alert(`🔮 Система: Выдано ${amount} 🍇 для пользователя @${target}!`);
+            updateClickerUI();
+        }
+
+        function adminGivePremium() {
+            let target = document.getElementById('admin-target-user').value.trim().toLowerCase();
+            let days = parseInt(document.getElementById('admin-premium-select').value);
+            
+            if (target.startsWith('@')) target = target.substring(1);
+            if (!allUsers.includes(target)) return alert('Пользователь не найден!');
+            
+            let addTime = days * 24 * 60 * 60 * 1000;
+            let expirationTime = new Date().getTime() + addTime;
+            
+            localStorage.setItem(PREMIUM_KEY + target, 'true');
+            localStorage.setItem(PREMIUM_UNTIL_KEY + target, expirationTime.toString());
+            
+            let dateStr = new Date(expirationTime).toLocaleDateString();
+            alert(`🔮 Система: Пользователю @${target} успешно активирован Премиум на ${days} дней (до ${dateStr})!`);
+            
+            if (target === currentUser) {
+                let savedCountry = localStorage.getItem(COUNTRIES_KEY + currentUser) || 'UA';
+                applyAccountData({ username: currentUser, country: savedCountry });
+            }
         }
 
         if (!loadSavedAccount()) { switchScreen('login-screen'); }
