@@ -188,6 +188,32 @@
         }
         .search-icon-inside { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
         
+        /* ВКЛАДКИ ПОИСКА В СТИЛЕ ТЕЛЕГРАМА */
+        .search-tabs {
+            display: none;
+            width: 90%;
+            gap: 5px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 5px;
+        }
+        .search-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .search-tab.active-tab {
+            background: var(--highlight);
+            border-color: black;
+            color: white;
+        }
+
         .create-btn {
             width: 90%;
             background-color: var(--highlight);
@@ -464,19 +490,30 @@
             <span class="search-icon-inside">🔍</span>
             <input type="text" id="search-input" class="search-input" placeholder="Поиск по нику, друзьям или каналам..." oninput="filterChats()"> 
         </div>
+
+        <div class="search-tabs" id="search-tabs-container">
+            <div class="search-tab active-tab" onclick="setSearchTab('all')">Все</div>
+            <div class="search-tab" onclick="setSearchTab('chats')">Чаты / ЛС</div>
+            <div class="search-tab" onclick="setSearchTab('channels')">Каналы</div>
+            <div class="search-tab" onclick="setSearchTab('global')">Глобальный поиск</div>
+        </div>
         
-        <div class="create-btn" onclick="openCreateChannel()">📢 Создать свой канал</div>
+        <div class="create-btn" id="create-channel-btn" onclick="openCreateChannel()">📢 Создать свой канал</div>
         
-        <div id="global-search-section" style="display:none; width:100%;">
-            <div class="section-title" style="color:var(--highlight);">РЕЗУЛЬТАТЫ ГЛOБАЛЬНОГО ПОИСКА ЛЮДЕЙ</div>
-            <div class="global-search-list" id="global-search-container"></div>
+        <div id="local-chats-section" style="width:100%;">
+            <div class="section-title" id="title-channels">ПУБЛИЧНЫЕ КАНАЛЫ</div>
+            <div class="chat-list" id="chat-list-container"></div>
         </div>
 
-        <div class="section-title">ПУБЛИЧНЫЕ КАНАЛЫ</div>
-        <div class="chat-list" id="chat-list-container"></div>
+        <div id="local-friends-section" style="width:100%;">
+            <div class="section-title" id="title-friends">ДРУЗЬЯ И ЛС</div>
+            <div class="friends-list" id="friends-list-container"></div>
+        </div>
 
-        <div class="section-title">ДРУЗЬЯ И ЛС</div>
-        <div class="friends-list" id="friends-list-container"></div>
+        <div id="global-search-section" style="display:none; width:100%;">
+            <div class="section-title" style="color:var(--highlight);">ГЛOБАЛЬНЫЙ ПОИСК СЕТИ NEXUMES</div>
+            <div class="global-search-list" id="global-search-container"></div>
+        </div>
     </div>
 
     <div id="create-channel-screen" class="screen">
@@ -687,6 +724,7 @@
         let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
         let activeDmFriend = null;
         
+        let currentSearchTab = 'all'; // Вкладка поиска по умолчанию
         let cipherModeActive = false;
         let modsState = {
             ghost: true, noscreenshot: true, viewdeleted: true, infiniteview: true,
@@ -722,7 +760,7 @@
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active-nav'));
                 navElement.classList.add('active-nav');
             }
-            if (screenId === 'chats-screen') { renderChatsAndFriends(); }
+            if (screenId === 'chats-screen') { resetSearchState(); renderChatsAndFriends(); }
             if (screenId === 'my-gifts-screen') { updateGiftsInventoryUI(); }
         }
 
@@ -945,39 +983,122 @@
             }).join('');
         }
 
+        /* УМНЫЙ ТЕЛЕГРАМ-ПОИСК С ВКЛАДКАМИ */
         function filterChats() {
             let q = document.getElementById('search-input').value.toLowerCase().trim();
-            let globalSection = document.getElementById('global-search-section');
-            let globalContainer = document.getElementById('global-search-container');
+            let tabsContainer = document.getElementById('search-tabs-container');
+            let createBtn = document.getElementById('create-channel-btn');
             
-            if(!q) {
-                globalSection.style.display = 'none';
-                renderChatsAndFriends();
+            let localChatsSec = document.getElementById('local-chats-section');
+            let localFriendsSec = document.getElementById('local-friends-section');
+            let globalSec = document.getElementById('global-search-section');
+            let globalContainer = document.getElementById('global-search-container');
+
+            if (!q) {
+                resetSearchState();
                 return;
             }
 
-            document.querySelectorAll('#chat-list-container .chat-item, #friends-list-container .friend-item').forEach(item => {
+            // Показываем вкладки как в Телеграме
+            tabsContainer.style.display = 'flex';
+            createBtn.style.display = 'none';
+
+            // Фильтруем каналы
+            let matchChannels = 0;
+            document.querySelectorAll('#chat-list-container .chat-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
-                item.style.display = text.includes(q) ? 'flex' : 'none';
+                if(text.includes(q)) {
+                    item.style.display = 'flex';
+                    matchChannels++;
+                } else {
+                    item.style.display = 'none';
+                }
             });
 
+            // Фильтруем друзей и ЛС
+            let matchFriends = 0;
+            document.querySelectorAll('#friends-list-container .friend-item').forEach(item => {
+                let text = item.innerText.toLowerCase();
+                if(text.includes(q)) {
+                    item.style.display = 'flex';
+                    matchFriends++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Глобальный поиск людей по всей базе данных
             allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser && u !== 'bot_reviews' && u !== 'ai_osint');
             
             if(foundUsers.length > 0) {
-                globalSection.style.display = 'block';
                 globalContainer.innerHTML = foundUsers.map(u => `
                     <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="addFriendFromSearch('${u}')">
                         <div class="friend-avatar" style="background:var(--highlight)">👤</div>
                         <div class="friend-info">
                             <div class="friend-name">@${u}</div>
-                            <div class="chat-type" style="color:#00ffcc;">Найдено в Nexumes • Нажмите для диалога</div>
+                            <div class="chat-type" style="color:#00ffcc;">Глобальный поиск Nexumes • Нажми для диалога</div>
                         </div>
                     </div>
                 `).join('');
             } else {
-                globalSection.style.display = 'none';
+                globalContainer.innerHTML = '<p style="text-align:center; opacity:0.5; font-size:14px; width:100%;">Ничего не найдено</p>';
             }
+
+            // Применяем фильтр выбранной вкладки (All, Chats, Channels, Global)
+            applyTabFiltering(matchChannels, matchFriends, foundUsers.length);
+        }
+
+        function setSearchTab(tabName) {
+            currentSearchTab = tabName;
+            document.querySelectorAll('.search-tab').forEach(t => {
+                t.classList.remove('active-tab');
+                if(t.innerText.toLowerCase().includes(tabName === 'chats' ? 'чаты' : tabName === 'channels' ? 'каналы' : tabName === 'global' ? 'глобальный' : 'все')) {
+                    t.classList.add('active-tab');
+                }
+            });
+            filterChats(); // Перерендеринг по клику
+        }
+
+        function applyTabFiltering(channelsCount, friendsCount, globalCount) {
+            let localChatsSec = document.getElementById('local-chats-section');
+            let localFriendsSec = document.getElementById('local-friends-section');
+            let globalSec = document.getElementById('global-search-section');
+
+            // Скрываем/показываем блоки в зависимости от вкладки
+            if (currentSearchTab === 'all') {
+                localChatsSec.style.display = channelsCount > 0 ? 'block' : 'none';
+                localFriendsSec.style.display = friendsCount > 0 ? 'block' : 'none';
+                globalSec.style.display = globalCount > 0 ? 'block' : 'none';
+            } 
+            else if (currentSearchTab === 'chats') {
+                localChatsSec.style.display = 'none';
+                localFriendsSec.style.display = friendsCount > 0 ? 'block' : 'none';
+                globalSec.style.display = 'none';
+            } 
+            else if (currentSearchTab === 'channels') {
+                localChatsSec.style.display = channelsCount > 0 ? 'block' : 'none';
+                localFriendsSec.style.display = 'none';
+                globalSec.style.display = 'none';
+            } 
+            else if (currentSearchTab === 'global') {
+                localChatsSec.style.display = 'none';
+                localFriendsSec.style.display = 'none';
+                globalSec.style.display = 'block';
+            }
+        }
+
+        function resetSearchState() {
+            document.getElementById('search-tabs-container').style.display = 'none';
+            document.getElementById('create-channel-btn').style.display = 'block';
+            document.getElementById('local-chats-section').style.display = 'block';
+            document.getElementById('local-friends-section').style.display = 'block';
+            document.getElementById('global-search-section').style.display = 'none';
+            
+            document.querySelectorAll('#chat-list-container .chat-item, #friends-list-container .friend-item').forEach(item => {
+                item.style.display = 'flex';
+            });
+            renderChatsAndFriends();
         }
 
         function addFriendFromSearch(username) {
@@ -987,7 +1108,7 @@
                 localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
             }
             document.getElementById('search-input').value = '';
-            document.getElementById('global-search-section').style.display = 'none';
+            resetSearchState();
             openDm(username);
         }
 
