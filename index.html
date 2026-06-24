@@ -14,7 +14,6 @@
             --transition-speed: 0.3s;
         }
 
-        /* Светлая тема */
         .light-theme {
             --bg-color: #f0e6ff;
             --element-color: #d8b4fe;
@@ -22,7 +21,6 @@
             --highlight: #a855f7;
         }
 
-        /* Черная тема */
         .dark-theme {
             --bg-color: #0a0a0a;
             --element-color: #1a1a1a;
@@ -30,7 +28,6 @@
             --highlight: #bb86fc;
         }
 
-        /* Ночной чат */
         .night-chat-theme {
             --bg-color: #020005;
             --element-color: #0d001a;
@@ -188,7 +185,6 @@
         }
         .search-icon-inside { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); }
         
-        /* ВКЛАДКИ ПОИСКА В СТИЛЕ ТЕЛЕГРАМА */
         .search-tabs {
             display: none;
             width: 90%;
@@ -214,15 +210,22 @@
             color: white;
         }
 
-        .create-btn {
+        .create-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
             width: 90%;
+            margin-bottom: 15px;
+        }
+
+        .create-btn-small {
             background-color: var(--highlight);
             color: white;
-            padding: 12px;
+            padding: 10px 5px;
             border: 2px solid black;
             border-radius: 10px;
             font-weight: bold;
-            margin-bottom: 15px;
+            font-size: 11px;
             cursor: pointer;
             text-align: center;
         }
@@ -287,6 +290,17 @@
         .dm-msg.sent { background-color: var(--highlight); align-self: flex-end; }
         .dm-msg.received { background-color: var(--element-color); align-self: flex-start; }
         
+        .msg-author-clickable {
+            cursor: pointer;
+            text-decoration: underline;
+            color: #00ffcc;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        .msg-author-clickable:hover {
+            color: #ffffff;
+        }
+
         .video-circle {
             width: 120px;
             height: 120px;
@@ -488,7 +502,7 @@
 
         <div class="search-container">
             <span class="search-icon-inside">🔍</span>
-            <input type="text" id="search-input" class="search-input" placeholder="Поиск по нику, друзьям или каналам..." oninput="filterChats()"> 
+            <input type="text" id="search-input" class="search-input" placeholder="Поиск по нику, друзьям или комнатам..." oninput="filterChats()"> 
         </div>
 
         <div class="search-tabs" id="search-tabs-container">
@@ -498,10 +512,14 @@
             <div class="search-tab" onclick="setSearchTab('global')">Глобальный поиск</div>
         </div>
         
-        <div class="create-btn" id="create-channel-btn" onclick="openCreateChannel()">📢 Создать свой канал</div>
+        <div class="create-buttons-grid" id="create-actions-bar">
+            <div class="create-btn-small" onclick="openCreateScreen('channel')">📢 Канал</div>
+            <div class="create-btn-small" onclick="openCreateScreen('chat')">💬 Группу</div>
+            <div class="create-btn-small" onclick="openCreateScreen('bot')">🤖 Робота</div>
+        </div>
         
         <div id="local-chats-section" style="width:100%;">
-            <div class="section-title" id="title-channels">ПУБЛИЧНЫЕ КАНАЛЫ</div>
+            <div class="section-title" id="title-channels">ПУБЛИЧНЫЕ КАНАЛЫ И ЧАТЫ</div>
             <div class="chat-list" id="chat-list-container"></div>
         </div>
 
@@ -516,19 +534,51 @@
         </div>
     </div>
 
-    <div id="create-channel-screen" class="screen">
+    <div id="create-item-screen" class="screen">
         <button class="back-btn" onclick="switchScreen('chats-screen')">⬅ Назад в чаты</button>
-        <h2>Новый канал</h2>
+        <h2 id="create-screen-title">Создание объекта</h2>
         <div class="reg-box">
-            <input type="text" id="channel-name" class="reg-input" placeholder="Название канала" />
-            <input type="text" id="channel-username" class="reg-input" placeholder="Уникальный @юз канала" />
-            <button class="reg-input" style="background: var(--highlight); color:white; font-weight:bold;" onclick="submitCreateChannel()">Создать канал</button>
+            <input type="text" id="create-item-name" class="reg-input" placeholder="Название / Имя" />
+            <input type="text" id="create-item-username" class="reg-input" placeholder="Уникальный @юзернейм (без @)" />
+            <input type="text" id="create-bot-welcome" class="reg-input" placeholder="Приветственное слово бота (только для ИИ Ботов)" style="display:none;" />
+            <button class="reg-input" style="background: var(--highlight); color:white; font-weight:bold;" onclick="submitCreateItem()">Создать</button>
         </div>
+    </div>
+
+    <div id="inspect-screen" class="screen">
+        <button class="back-btn" onclick="switchScreen('chats-screen')">⬅ Назад</button>
+        <h2 id="inspect-title">Инфоцентр объекта</h2>
+        <div class="profile-header">
+            <div class="profile-avatar-big" id="inspect-avatar" style="position:relative;">?</div>
+            <div class="profile-name" id="inspect-name">Название</div>
+            <div class="profile-links"><span id="inspect-username">@username</span></div>
+        </div>
+
+        <div class="reg-box" id="inspect-management-zone" style="display:none;">
+            <h3>⚙️ Управление (Режим Создателя)</h3>
+            <input type="text" id="edit-inspect-name" class="reg-input" placeholder="Новое название">
+            <label for="inspect-avatar-upload" class="btn-action" style="display:block; margin: 10px 0;">📷 Сменить аватарку</label>
+            <input type="file" id="inspect-avatar-upload" style="display:none;" accept="image/*" onchange="uploadInspectAvatar(event)">
+            <button class="btn-action" style="width:100%; padding:10px; background:#2a9d8f;" onclick="saveInspectChanges()">Сохранить настройки</button>
+        </div>
+
+        <div class="clicker-container" id="inspect-members-zone">
+            <h3 id="inspect-list-title">👥 Участники / Подписчики</h3>
+            <div id="inspect-members-list" style="text-align:left; max-height:200px; overflow-y:auto; font-size:14px; display:flex; flex-direction:column; gap:5px;">
+            </div>
+            <div id="inspect-admin-assign-box" style="margin-top:10px; display:none; text-align:left;">
+                <input type="text" id="assign-admin-username" class="reg-input" placeholder="Ник друга для назначения админом" style="padding:6px; font-size:13px;">
+                <button class="btn-action" style="font-size:12px; width:100%; background:#7209b7;" onclick="assignAdminAction()">Назначить Администратором</button>
+            </div>
+        </div>
+        
+        <button class="btn-purple" id="inspect-action-btn" onclick="inspectMainAction()">Действие</button>
     </div>
 
     <div id="dm-screen" class="screen">
         <div style="width:90%; display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
             <button class="back-btn" style="margin:0;" onclick="switchScreen('chats-screen')">← Назад</button>
+            <button class="btn-action" style="background:#00b4d8;" onclick="viewCurrentChatProfile()">ℹ️ Инфо</button>
             <button class="btn-action" style="background:#00b4d8;" onclick="makeCallSafe()">📞 Звонок</button>
         </div>
         
@@ -720,11 +770,13 @@
         const GIFTS_PREFIX = 'nexumes_gifts_';
 
         let currentUser = null;
-        let defaultUsers = ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya', 'void_creator'];
+        let defaultUsers = ['nexumes', 'admin', 'support', 'bot_reviews', 'ai_osint', 'kolya', 'void_creator', 'nexumes_ai'];
         let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
         let activeDmFriend = null;
+        let currentCreateType = 'channel'; 
+        let tempInspectAvatarB64 = null;
         
-        let currentSearchTab = 'all'; // Вкладка поиска по умолчанию
+        let currentSearchTab = 'all'; 
         let cipherModeActive = false;
         let modsState = {
             ghost: true, noscreenshot: true, viewdeleted: true, infiniteview: true,
@@ -740,9 +792,29 @@
             interceptor: { name: 'Интерцептор DIV-2', icon: '🌌', price: 1000, sellPrice: 800 }
         };
 
+        const AI_RESPONSES = [
+            "Я проанализировал защищенную среду Nexumes. Логи чисты. Код стабилен. 🔮",
+            "Привет! Я нейросетевой module Nexumes AI. Могу помочь тебе в разработке игр или треков. Что пишем?",
+            "Обнаружена аномалия! Шучу, всё в порядке. Твой прокси-трафик зашифрован на 100%. 🌌",
+            "Интерцептор DIV-2 готов к выезду. Погода за окном зафиксирована ИИ-сканерами.",
+            "Проект 'Void' продвигается отлично. Охват аудитории растет каждую минуту!"
+        ];
+
         window.addEventListener('DOMContentLoaded', () => {
             if(!localStorage.getItem(USERS_KEY)) {
                 localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
+            }
+            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+            if(!channels.some(c => c.username === '@global_chat')) {
+                channels.push({
+                    name: "🌐 ГЛОБАЛЬНЫЙ ЧАТ",
+                    username: "@global_chat",
+                    creator: "admin",
+                    type: "chat",
+                    members: ["admin", "kolya", "void_creator", "support"],
+                    admins: ["admin"]
+                });
+                localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
             }
             setTimeout(() => {
                 document.getElementById('splash-screen').style.display = 'none';
@@ -897,7 +969,7 @@
                 document.getElementById('premium-badge').style.color = "#ffb703";
             }
 
-            if (data.username === 'void_creator') {
+            if (data.username === 'void_creator' || data.username === 'kolya') {
                 document.getElementById('void-admin-panel').style.display = 'block';
             } else {
                 document.getElementById('void-admin-panel').style.display = 'none';
@@ -938,7 +1010,7 @@
         }
 
         function makeCallSafe() {
-            if(confirm("📲 Вы точно хотите совершить защищенный звонок пользователю @"+activeDmFriend+"?")) {
+            if(confirm("📲 Вы точно хотите совершить защищенный звонок в этот чат?")) {
                 alert("Вызывается шифрованная линия соединения...");
             }
         }
@@ -946,21 +1018,34 @@
         function renderChatsAndFriends() {
             let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
             let chatContainer = document.getElementById('chat-list-container');
-            chatContainer.innerHTML = channels.map(ch => `
-                <div class="chat-item" onclick="openChannelChat('${ch.username}', '${ch.name}')">
-                    <div class="chat-avatar" style="background-color: #7209b7">📢</div>
-                    <div class="chat-info">
-                        <div class="chat-name">${ch.name}</div>
-                        <div class="chat-type">Канал • ${ch.username}</div>
+            
+            chatContainer.innerHTML = channels.map(ch => {
+                let savedChAv = localStorage.getItem(AVATARS_KEY + ch.username);
+                let avStyle = savedChAv ? `background-image:url('${savedChAv}'); text-indent:-9999px;` : '';
+                let typeLabel = ch.type === 'chat' ? 'Групповой Чат' : 'Канал';
+                let icon = ch.type === 'chat' ? '💬' : '📢';
+                if (ch.username === '@global_chat') icon = '🌐';
+                
+                return `
+                    <div class="chat-item" onclick="openChannelChat('${ch.username}', '${ch.name}')">
+                        <div class="chat-avatar" style="background-color: #7209b7; ${avStyle}">${icon}</div>
+                        <div class="chat-info">
+                            <div class="chat-name">${ch.name}</div>
+                            <div class="chat-type">${typeLabel} • ${ch.username}</div>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             if (!currentUser) return;
             let friends = JSON.parse(localStorage.getItem(FRIENDS_KEY + currentUser)) || [];
             let friendsContainer = document.getElementById('friends-list-container');
             
             let systemBotsHTML = `
+                <div class="friend-item" onclick="openDm('nexumes_ai')">
+                    <div class="friend-avatar" style="background:#b046ff">🔮</div>
+                    <div class="friend-info"><div class="friend-name">Nexumes AI Чат-бот</div><div class="chat-type">Официальный ИИ</div></div>
+                </div>
                 <div class="friend-item" onclick="openDm('bot_reviews')">
                     <div class="friend-avatar" style="background:#0077b6">🤖</div>
                     <div class="friend-info"><div class="friend-name">Бот отзывов Nexumes</div><div class="chat-type">Робот</div></div>
@@ -971,13 +1056,27 @@
                 </div>
             `;
 
-            friendsContainer.innerHTML = systemBotsHTML + friends.map(f => {
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
+            let customBots = allUsers.filter(u => u.startsWith('bot_') && u !== 'bot_reviews');
+
+            let customBotsHTML = customBots.map(b => {
+                let bAv = localStorage.getItem(AVATARS_KEY + b);
+                let avStyle = bAv ? `background-image:url('${bAv}');text-indent:-9999px;` : '';
+                return `
+                    <div class="friend-item" onclick="openDm('${b}')">
+                        <div class="friend-avatar" style="background:#ff007f; ${avStyle}">🤖</div>
+                        <div class="friend-info"><div class="friend-name">@${b} (Мой Бот)</div><div class="chat-type">Пользовательский ИИ</div></div>
+                    </div>
+                `;
+            }).join('');
+
+            friendsContainer.innerHTML = systemBotsHTML + customBotsHTML + friends.map(f => {
                 let fAv = localStorage.getItem(AVATARS_KEY + f);
                 let avStyle = fAv ? `background-image:url('${fAv}');text-indent:-9999px;` : '';
                 return `
                     <div class="friend-item" onclick="openDm('${f}')">
                         <div class="friend-avatar" style="${avStyle}">${f.charAt(0).toUpperCase()}</div>
-                        <div class="friend-info"><div class="friend-name">@${f}</div></div>
+                        <div class="friend-info"><div class="friend-name">@${f}</div><div class="chat-type">Пользователь</div></div>
                     </div>
                 `;
             }).join('');
@@ -987,7 +1086,7 @@
         function filterChats() {
             let q = document.getElementById('search-input').value.toLowerCase().trim();
             let tabsContainer = document.getElementById('search-tabs-container');
-            let createBtn = document.getElementById('create-channel-btn');
+            let actionsBar = document.getElementById('create-actions-bar');
             
             let localChatsSec = document.getElementById('local-chats-section');
             let localFriendsSec = document.getElementById('local-friends-section');
@@ -999,11 +1098,9 @@
                 return;
             }
 
-            // Показываем вкладки как в Телеграме
             tabsContainer.style.display = 'flex';
-            createBtn.style.display = 'none';
+            actionsBar.style.display = 'none';
 
-            // Фильтруем каналы
             let matchChannels = 0;
             document.querySelectorAll('#chat-list-container .chat-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
@@ -1015,7 +1112,6 @@
                 }
             });
 
-            // Фильтруем друзей и ЛС
             let matchFriends = 0;
             document.querySelectorAll('#friends-list-container .friend-item').forEach(item => {
                 let text = item.innerText.toLowerCase();
@@ -1027,26 +1123,46 @@
                 }
             });
 
-            // Глобальный поиск людей по всей базе данных
             allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
-            let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser && u !== 'bot_reviews' && u !== 'ai_osint');
+            let foundUsers = allUsers.filter(u => u.includes(q) && u !== currentUser);
             
-            if(foundUsers.length > 0) {
-                globalContainer.innerHTML = foundUsers.map(u => `
-                    <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="addFriendFromSearch('${u}')">
+            // Также ищем публичные чаты/каналы в глобальном поиске
+            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+            let foundChannels = channels.filter(c => c.username.toLowerCase().includes(q) || c.name.toLowerCase().includes(q));
+
+            let globalHTML = '';
+            
+            foundUsers.forEach(u => {
+                globalHTML += `
+                    <div class="friend-item" style="border: 2px solid var(--highlight);" onclick="inspectTargetFromGlobal('${u}', 'user')">
                         <div class="friend-avatar" style="background:var(--highlight)">👤</div>
                         <div class="friend-info">
                             <div class="friend-name">@${u}</div>
-                            <div class="chat-type" style="color:#00ffcc;">Глобальный поиск Nexumes • Нажми для диалога</div>
+                            <div class="chat-type" style="color:#00ffcc;">Глобальный пользователь • Посмотреть профиль</div>
                         </div>
                     </div>
-                `).join('');
+                `;
+            });
+
+            foundChannels.forEach(c => {
+                globalHTML += `
+                    <div class="friend-item" style="border: 2px solid #7209b7;" onclick="inspectTargetFromGlobal('${c.username}', 'chat')">
+                        <div class="friend-avatar" style="background:#7209b7">🌐</div>
+                        <div class="friend-info">
+                            <div class="friend-name">${c.name}</div>
+                            <div class="chat-type" style="color:#ffb703;">Глобальная комната • ${c.username}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(globalHTML) {
+                globalContainer.innerHTML = globalHTML;
             } else {
                 globalContainer.innerHTML = '<p style="text-align:center; opacity:0.5; font-size:14px; width:100%;">Ничего не найдено</p>';
             }
 
-            // Применяем фильтр выбранной вкладки (All, Chats, Channels, Global)
-            applyTabFiltering(matchChannels, matchFriends, foundUsers.length);
+            applyTabFiltering(matchChannels, matchFriends, (foundUsers.length + foundChannels.length));
         }
 
         function setSearchTab(tabName) {
@@ -1057,7 +1173,7 @@
                     t.classList.add('active-tab');
                 }
             });
-            filterChats(); // Перерендеринг по клику
+            filterChats();
         }
 
         function applyTabFiltering(channelsCount, friendsCount, globalCount) {
@@ -1065,7 +1181,6 @@
             let localFriendsSec = document.getElementById('local-friends-section');
             let globalSec = document.getElementById('global-search-section');
 
-            // Скрываем/показываем блоки в зависимости от вкладки
             if (currentSearchTab === 'all') {
                 localChatsSec.style.display = channelsCount > 0 ? 'block' : 'none';
                 localFriendsSec.style.display = friendsCount > 0 ? 'block' : 'none';
@@ -1090,7 +1205,7 @@
 
         function resetSearchState() {
             document.getElementById('search-tabs-container').style.display = 'none';
-            document.getElementById('create-channel-btn').style.display = 'block';
+            document.getElementById('create-actions-bar').style.display = 'grid';
             document.getElementById('local-chats-section').style.display = 'block';
             document.getElementById('local-friends-section').style.display = 'block';
             document.getElementById('global-search-section').style.display = 'none';
@@ -1101,44 +1216,35 @@
             renderChatsAndFriends();
         }
 
-        function addFriendFromSearch(username) {
-            let friends = JSON.parse(localStorage.getItem(FRIENDS_KEY + currentUser)) || [];
-            if (!friends.includes(username)) {
-                friends.push(username);
-                localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
-            }
-            document.getElementById('search-input').value = '';
-            resetSearchState();
-            openDm(username);
-        }
-
         function openDm(friend) {
             activeDmFriend = friend;
-            document.getElementById('dm-partner-name').innerHTML = `<span>Чат с @${friend}</span>`;
-            document.getElementById('dm-controls-area').style.display = 'flex';
+            if(friend.startsWith('@')) activeDmFriend = friend; 
+            
+            let displayTitle = friend.startsWith('@') ? `Комната: ${friend}` : `Чат с @${friend}`;
+            document.getElementById('dm-partner-name').innerHTML = `<span>${displayTitle}</span>`;
+            
+            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+            let chan = channels.find(c => c.username === friend);
+            
+            if(chan) {
+                if(chan.type === 'channel' && chan.creator !== currentUser && !(chan.admins || []).includes(currentUser)) {
+                    document.getElementById('dm-controls-area').style.display = 'none';
+                } else {
+                    document.getElementById('dm-controls-area').style.display = 'flex';
+                }
+            } else {
+                document.getElementById('dm-controls-area').style.display = 'flex';
+            }
             
             let typingEl = document.getElementById('fake-typing-status');
-            typingEl.style.display = (modsState.faketyping || friend.includes('bot')) ? 'block' : 'none';
+            typingEl.style.display = (modsState.faketyping || friend.includes('bot') || friend === 'nexumes_ai') ? 'block' : 'none';
 
             renderDmMessages();
             switchScreen('dm-screen');
         }
 
         function openChannelChat(chUsername, chName) {
-            activeDmFriend = chUsername; 
-            document.getElementById('dm-partner-name').innerHTML = `<span>📢 Канал: ${chName}</span>`;
-            
-            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
-            let currentChannel = channels.find(c => c.username === chUsername);
-            
-            if(!currentChannel.creator || currentChannel.creator === currentUser) {
-                document.getElementById('dm-controls-area').style.display = 'flex';
-            } else {
-                document.getElementById('dm-controls-area').style.display = 'none';
-            }
-            
-            renderDmMessages();
-            switchScreen('dm-screen');
+            openDm(chUsername);
         }
 
         function wrapInputFormat(type) {
@@ -1217,49 +1323,73 @@
 
         function executeMessageSending(text) {
             submitMessageToStorage(text);
+            let partner = activeDmFriend;
             
-            if(activeDmFriend === 'bot_reviews') {
+            if(partner === 'bot_reviews') {
+                setTimeout(() => { submitMessageFromPartner("🤖 Бот отзывов: Спасибо за отзыв! Мы занесли его в базу.", partner); }, 1000);
+            } else if(partner === 'ai_osint') {
+                setTimeout(() => { submitMessageFromPartner("🧠 ИИ Сканер: Анализ завершен. Координаты скрыты.", partner); }, 1200);
+            } else if(partner === 'nexumes_ai') {
                 setTimeout(() => {
-                    submitMessageFromPartner("🤖 Бот отзывов: Спасибо за отзыв! Мы передали его Коле.");
+                    let randomAiText = AI_RESPONSES[Math.floor(Math.random() * AI_RESPONSES.length)];
+                    submitMessageFromPartner("🔮 Nexumes AI: " + randomAiText, partner);
                 }, 1000);
-            } else if(activeDmFriend === 'ai_osint') {
+            } else if(partner.startsWith('bot_')) {
                 setTimeout(() => {
-                    submitMessageFromPartner("🧠 ИИ Сканер: Ошибка EXIF данных. Фото безопасно.");
-                }, 1200);
+                    let customWelcome = localStorage.getItem('welcome_' + partner) || "Привет! Я твой личный кастомный робот. 🦾";
+                    submitMessageFromPartner(`🤖 @${partner}: ${customWelcome}`, partner);
+                }, 1000);
             }
         }
 
         function submitMessageToStorage(processedText) {
-            const sorted = [currentUser, activeDmFriend].sort();
-            const key = MSGS_KEY + sorted[0] + '_' + sorted[1];
-            let msgs = JSON.parse(localStorage.getItem(key)) || [];
+            let key = MSGS_KEY + activeDmFriend;
+            if(!activeDmFriend.startsWith('@')) {
+                const sorted = [currentUser, activeDmFriend].sort();
+                key = MSGS_KEY + sorted[0] + '_' + sorted[1];
+            }
             
+            let msgs = JSON.parse(localStorage.getItem(key)) || [];
             msgs.push({ from: currentUser, text: processedText, id: Date.now() });
             localStorage.setItem(key, JSON.stringify(msgs));
             renderDmMessages();
             play8BitSound();
         }
 
-        function submitMessageFromPartner(botText) {
-            const sorted = [currentUser, activeDmFriend].sort();
-            const key = MSGS_KEY + sorted[0] + '_' + sorted[1];
+        function submitMessageFromPartner(botText, partner) {
+            let key = MSGS_KEY + partner;
+            if(!partner.startsWith('@')) {
+                const sorted = [currentUser, partner].sort();
+                key = MSGS_KEY + sorted[0] + '_' + sorted[1];
+            }
             let msgs = JSON.parse(localStorage.getItem(key)) || [];
-            msgs.push({ from: activeDmFriend, text: botText, id: Date.now() });
+            msgs.push({ from: partner, text: botText, id: Date.now() });
             localStorage.setItem(key, JSON.stringify(msgs));
-            renderDmMessages();
+            if(activeDmFriend === partner) { renderDmMessages(); }
         }
 
         function renderDmMessages() {
-            const sorted = [currentUser, activeDmFriend].sort();
-            const key = MSGS_KEY + sorted[0] + '_' + sorted[1];
+            let key = MSGS_KEY + activeDmFriend;
+            let isChannelOrGroup = activeDmFriend.startsWith('@');
+            if(!isChannelOrGroup) {
+                const sorted = [currentUser, activeDmFriend].sort();
+                key = MSGS_KEY + sorted[0] + '_' + sorted[1];
+            }
+            
             let msgs = JSON.parse(localStorage.getItem(key)) || [];
             let container = document.getElementById('dm-messages-container');
             
             container.innerHTML = msgs.map(m => {
                 let cls = m.from === currentUser ? 'sent' : 'received';
+                
+                // В групповых комнатах (включая @global_chat) делаем ник автора КЛИКАБЕЛЬНЫМ для открытия инфо профиля
+                let authorHTML = isChannelOrGroup 
+                    ? `<span class="msg-author-clickable" onclick="inspectTargetFromGlobal('${m.from}', 'user')">@${m.from}</span>`
+                    : `<strong>@${m.from}</strong>`;
+                
                 return `
                     <div class="dm-msg ${cls}" id="msg-${m.id}">
-                        <strong>@${m.from}:</strong> ${m.text}
+                        ${authorHTML}: ${m.text}
                         <button style="position:absolute; top:-2px; right:-15px; background:none; border:none; color:red; font-size:10px; cursor:pointer;" onclick="simulateDeleteMessage(${m.id})">❌</button>
                     </div>
                 `;
@@ -1271,6 +1401,148 @@
             alert("🔒 Попытка удаления: Сообщение сохранено анти-удалением Nexumes!");
             let el = document.getElementById('msg-'+id);
             if(el) { el.style.border = "2px dashed red"; }
+        }
+
+        function viewCurrentChatProfile() {
+            if(activeDmFriend.startsWith('@')) {
+                inspectTargetFromGlobal(activeDmFriend, 'chat');
+            } else {
+                inspectTargetFromGlobal(activeDmFriend, 'user');
+            }
+        }
+
+        function inspectTargetFromGlobal(target, mode) {
+            tempInspectAvatarB64 = null;
+            document.getElementById('inspect-management-zone').style.display = 'none';
+            document.getElementById('inspect-admin-assign-box').style.display = 'none';
+            document.getElementById('inspect-members-zone').style.display = 'none';
+
+            let titleEl = document.getElementById('inspect-name');
+            let userEl = document.getElementById('inspect-username');
+            let avEl = document.getElementById('inspect-avatar');
+            let actionBtn = document.getElementById('inspect-action-btn');
+
+            let savedAv = localStorage.getItem(AVATARS_KEY + target);
+            if(savedAv) { avEl.style.backgroundImage = `url('${savedAv}')`; avEl.innerText = ''; } 
+            else { avEl.style.backgroundImage = 'none'; avEl.innerText = target.charAt(0).toUpperCase(); }
+
+            if(mode === 'user') {
+                titleEl.innerText = "Пользователь базы";
+                userEl.innerText = "@" + target;
+                
+                // Кнопка для юзеров теперь не просто добавляет в список, а СРАЗУ открывает переписку ЛС
+                actionBtn.innerText = "💬 Написать / Открыть ЛС";
+                actionBtn.onclick = function() { addFriendAndWriteDirect(target); };
+                
+                document.getElementById('inspect-members-zone').style.display = 'block';
+                document.getElementById('inspect-list-title').innerText = "📦 Инвентарь подарков";
+                let gifts = JSON.parse(localStorage.getItem(GIFTS_PREFIX + target)) || {};
+                let itemsStr = Object.keys(gifts).filter(k => gifts[k] > 0).map(k => `${GIFT_CONFIG[k].icon} ${GIFT_CONFIG[k].name} (${gifts[k]} шт)`).join(', ');
+                document.getElementById('inspect-members-list').innerHTML = itemsStr ? `<div>${itemsStr}</div>` : '<div>Инвентарь пуст</div>';
+            } 
+            else if(mode === 'chat') {
+                let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+                let chan = channels.find(c => c.username === target);
+                if(!chan) return;
+
+                titleEl.innerText = chan.name;
+                userEl.innerText = chan.username;
+                
+                let isCreator = chan.creator === currentUser;
+                let isAdmin = (chan.admins || []).includes(currentUser);
+
+                if(isCreator) {
+                    document.getElementById('inspect-management-zone').style.display = 'block';
+                    document.getElementById('edit-inspect-name').value = chan.name;
+                    document.getElementById('inspect-admin-assign-box').style.display = 'block';
+                }
+
+                document.getElementById('inspect-members-zone').style.display = 'block';
+                document.getElementById('inspect-list-title').innerText = chan.type === 'chat' ? "👥 Участники чата" : "📢 Подписчики канала";
+                
+                let membersList = chan.members || [chan.creator];
+                document.getElementById('inspect-members-list').innerHTML = membersList.map(m => {
+                    let role = m === chan.creator ? '⭐ Создатель' : ((chan.admins || []).includes(m) ? '🛠 Админ' : 'Участник');
+                    return `<div><strong>@${m}</strong> — <span style="color:var(--highlight); font-size:12px;">${role}</span></div>`;
+                }).join('');
+
+                actionBtn.innerText = "Войти в комнату";
+                actionBtn.onclick = function() { openDm(chan.username); };
+            }
+            switchScreen('inspect-screen');
+        }
+
+        // Автоматическое добавление в друзья + моментальный переход в ЛС
+        function addFriendAndWriteDirect(username) {
+            if(username === currentUser) {
+                alert("Это ваш собственный профиль!");
+                return;
+            }
+            let friends = JSON.parse(localStorage.getItem(FRIENDS_KEY + currentUser)) || [];
+            if (!friends.includes(username)) {
+                friends.push(username);
+                localStorage.setItem(FRIENDS_KEY + currentUser, JSON.stringify(friends));
+            }
+            document.getElementById('search-input').value = '';
+            resetSearchState();
+            openDm(username);
+        }
+
+        function uploadInspectAvatar(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('inspect-avatar').style.backgroundImage = `url('${e.target.result}')`;
+                    document.getElementById('inspect-avatar').innerText = '';
+                    tempInspectAvatarB64 = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveInspectChanges() {
+            let currentUsername = document.getElementById('inspect-username').innerText;
+            let newName = document.getElementById('edit-inspect-name').value.trim();
+            if(!newName) return alert('Название не может быть пустым!');
+
+            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+            let chan = channels.find(c => c.username === currentUsername);
+            if(chan && chan.creator === currentUser) {
+                chan.name = newName;
+                localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
+                if(tempInspectAvatarB64) {
+                    localStorage.setItem(AVATARS_KEY + chan.username, tempInspectAvatarB64);
+                }
+                alert('Параметры успешно обновлены!');
+                inspectTargetFromGlobal(chan.username, 'chat');
+            }
+        }
+
+        function assignAdminAction() {
+            let currentUsername = document.getElementById('inspect-username').innerText;
+            let targetAdmin = document.getElementById('assign-admin-username').value.trim().toLowerCase();
+            if(targetAdmin.startsWith('@')) targetAdmin = targetAdmin.substring(1);
+
+            allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
+            if(!allUsers.includes(targetAdmin)) return alert('Пользователь не найден в системе!');
+
+            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+            let chan = channels.find(c => c.username === currentUsername);
+            if(chan && chan.creator === currentUser) {
+                if(!chan.admins) chan.admins = [];
+                if(!chan.admins.includes(targetAdmin)) {
+                    chan.admins.push(targetAdmin);
+                    if(!chan.members) chan.members = [chan.creator];
+                    if(!chan.members.includes(targetAdmin)) chan.members.push(targetAdmin);
+                    localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
+                    alert(`@${targetAdmin} назначен администратором!`);
+                    document.getElementById('assign-admin-username').value = '';
+                    inspectTargetFromGlobal(chan.username, 'chat');
+                } else {
+                    alert('Он уже админ!');
+                }
+            }
         }
 
         function toggleMod(modKey) {
@@ -1312,22 +1584,51 @@
             alert('Тема изменена!');
         }
 
-        function openCreateChannel() { switchScreen('create-channel-screen'); }
+        function openCreateScreen(type) {
+            currentCreateType = type;
+            document.getElementById('create-bot-welcome').style.display = type === 'bot' ? 'block' : 'none';
+            let titles = { channel: 'Новый Канал', chat: 'Новый Групповой Чат', bot: 'Создать ИИ Робота' };
+            document.getElementById('create-screen-title').innerText = titles[type];
+            document.getElementById('create-item-name').value = '';
+            document.getElementById('create-item-username').value = '';
+            document.getElementById('create-bot-welcome').value = '';
+            switchScreen('create-item-screen');
+        }
         
-        function submitCreateChannel() {
-            let name = document.getElementById('channel-name').value.trim();
-            let chUser = document.getElementById('channel-username').value.trim().toLowerCase();
-            if (!name || !chUser) return alert('Заполни все поля!');
-            if (chUser.startsWith('@')) chUser = chUser.substring(1);
+        function submitCreateItem() {
+            let name = document.getElementById('create-item-name').value.trim();
+            let rawUser = document.getElementById('create-item-username').value.trim().toLowerCase();
+            if (!name || !rawUser) return alert('Заполни поля!');
+            if (rawUser.startsWith('@')) rawUser = rawUser.substring(1);
 
-            let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
-            if(channels.some(c => c.username === '@' + chUser)) return alert('Канал с таким юзом уже есть!');
+            if(currentCreateType === 'bot') {
+                let botUser = 'bot_' + rawUser;
+                allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
+                if(allUsers.includes(botUser)) return alert('Робот с таким юзернеймом уже существует!');
+                
+                allUsers.push(botUser);
+                localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
+                
+                let welcome = document.getElementById('create-bot-welcome').value.trim();
+                if(welcome) localStorage.setItem('welcome_' + botUser, welcome);
+                
+                alert('ИИ Бот успешно сконструирован!');
+            } else {
+                let formattedUser = '@' + rawUser;
+                let channels = JSON.parse(localStorage.getItem(CHANNELS_KEY)) || [];
+                if(channels.some(c => c.username === formattedUser)) return alert('Комната с таким юзом уже есть!');
 
-            channels.push({ name: name, username: '@' + chUser, creator: currentUser });
-            localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
-
-            document.getElementById('channel-name').value = '';
-            document.getElementById('channel-username').value = '';
+                channels.push({
+                    name: name,
+                    username: formattedUser,
+                    creator: currentUser,
+                    type: currentCreateType,
+                    members: [currentUser],
+                    admins: []
+                });
+                localStorage.setItem(CHANNELS_KEY, JSON.stringify(channels));
+                alert('Комната создана!');
+            }
             switchScreen('chats-screen');
         }
 
@@ -1371,7 +1672,7 @@
             let clicks = parseInt(localStorage.getItem(CLICKS_TODAY_KEY + currentUser)) || 0;
 
             if(clicks >= 100) {
-                alert("🛑 Бот-кликер: Дневной лимит кликов (100 кликов) исчерпан! Приходи завтра.");
+                alert("🛑 Бот-кликер: Дневной лимит кликов исчерпан!");
                 return;
             }
 
@@ -1390,7 +1691,7 @@
         function buyPremiumWithGrapes() {
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
             if(balance < 1000) {
-                alert(`⚠️ Недостаточно винограда! У тебя ${balance}/1000 🍇. Кликай дальше!`);
+                alert(`⚠️ Недостаточно винограда! У тебя ${balance}/1000 🍇.`);
                 return;
             }
 
@@ -1406,7 +1707,7 @@
             document.getElementById('premium-badge').style.color = "#00ffcc";
             
             updateClickerUI();
-            alert("🎉 Ура! Ты купил настоящий PREMIUM статус на месяц за виноград! Твой профиль обновлен.");
+            alert("🎉 Ура! Ты купил настоящий PREMIUM статус.");
         }
 
         function sendGiftAction() {
@@ -1419,16 +1720,12 @@
             if(targetUser.startsWith('@')) targetUser = targetUser.substring(1);
 
             allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
-            if(!allUsers.includes(targetUser)) {
-                return alert('Пользователь с таким ником не найден в глобальной базе Nexumes!');
-            }
+            if(!allUsers.includes(targetUser)) return alert('Пользователь не найден!');
 
             let price = GIFT_CONFIG[giftType].price;
             let balance = parseInt(localStorage.getItem(GRAPE_BAL_KEY + currentUser)) || 0;
 
-            if(balance < price) {
-                return alert(`⚠️ Недостаточно винограда! Подарок стоит ${price} 🍇, а у вас всего ${balance} 🍇.`);
-            }
+            if(balance < price) return alert(`⚠️ Недостаточно винограда! Подарок стоит ${price} 🍇.`);
 
             balance -= price;
             localStorage.setItem(GRAPE_BAL_KEY + currentUser, balance);
@@ -1439,7 +1736,7 @@
             localStorage.setItem(GIFTS_PREFIX + targetUser, JSON.stringify(targetGifts));
 
             play8BitSound();
-            alert(`🎉 Успешно отправлен подарок ${GIFT_CONFIG[giftType].icon} ${GIFT_CONFIG[giftType].name} для @${targetUser}! Списано: ${price} 🍇`);
+            alert(`🎉 Успешно отправлен подарок! Списано: ${price} 🍇`);
             document.getElementById('gift-target-user').value = '';
         }
 
@@ -1468,11 +1765,9 @@
         function sellGiftAction(giftKey) {
             if(!currentUser) return;
             let myGifts = JSON.parse(localStorage.getItem(GIFTS_PREFIX + currentUser)) || {};
-            
             if(!myGifts[giftKey] || myGifts[giftKey] <= 0) return alert('У вас нет этого подарка!');
             
             let config = GIFT_CONFIG[giftKey];
-            
             myGifts[giftKey]--;
             localStorage.setItem(GIFTS_PREFIX + currentUser, JSON.stringify(myGifts));
             
@@ -1483,7 +1778,7 @@
             play8BitSound();
             updateClickerUI();
             updateGiftsInventoryUI();
-            alert(`💰 Вы успешно продали ${config.icon} ${config.name} обратно системе и получили ${config.sellPrice} 🍇!`);
+            alert(`💰 Продано за ${config.sellPrice} 🍇!`);
         }
 
         function adminGiveGrapes() {
@@ -1493,12 +1788,12 @@
             if (target.startsWith('@')) target = target.substring(1);
             allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || defaultUsers;
             if (!allUsers.includes(target)) return alert('Пользователь не найден!');
-            if (isNaN(amount) || amount <= 0) return alert('Укажите нормальное количество винограда!');
+            if (isNaN(amount) || amount <= 0) return alert('Укажите количество!');
             
             let currentBal = parseInt(localStorage.getItem(GRAPE_BAL_KEY + target)) || 0;
             localStorage.setItem(GRAPE_BAL_KEY + target, currentBal + amount);
             
-            alert(`🔮 Система: Выдано ${amount} 🍇 для пользователя @${target}!`);
+            alert(`🔮 Выдано ${amount} 🍇 для @${target}!`);
             updateClickerUI();
         }
 
@@ -1516,9 +1811,7 @@
             localStorage.setItem(PREMIUM_KEY + target, 'true');
             localStorage.setItem(PREMIUM_UNTIL_KEY + target, expirationTime.toString());
             
-            let dateStr = new Date(expirationTime).toLocaleDateString();
-            alert(`🔮 Система: Пользователю @${target} успешно активирован Премиум на ${days} дней (до ${dateStr})!`);
-            
+            alert(`🔮 Для @${target} активирован Премиум!`);
             if (target === currentUser) {
                 let savedCountry = localStorage.getItem(COUNTRIES_KEY + currentUser) || 'UA';
                 applyAccountData({ username: currentUser, country: savedCountry });
